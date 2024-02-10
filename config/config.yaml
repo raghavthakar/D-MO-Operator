@@ -1,0 +1,42 @@
+environment:
+  randomPOIs: false
+  numberOfClassIds: 2
+  coupling: 2
+  reward: 30
+  penalty: -1
+  pois:
+    - id: 0
+      classId: 0
+      x: 10.0
+      y: 10.0
+      observationRadius: 5.0
+    - id: 1
+      classId: 1
+      x: 10.0
+      y: 10.0
+      observationRadius: 5
+    - id: 2
+      classId: 1
+      x: 10.0
+      y: 10.0
+      observationRadius: 6.0
+  
+  dimensions:
+    xLength: 100
+    yLength: 100
+  
+  numberOfTeams: 1000 # Will decide the number of policies for each agent in the population
+
+episode:
+  length: 100
+
+team:
+  numberOfAgents: 3
+
+agent:
+  randomStartPosition: true
+  startingX: 9
+  startingY: 11
+  maxStepSize: 4
+  observationRadius: 5
+  numberOfSensors: 4
