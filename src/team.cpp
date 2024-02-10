@@ -223,6 +223,7 @@ void Team::printInfo() {
         std::cout<<"    Agent position: "<<agent.getPosition().first
         <<","<<agent.getPosition().second<<std::endl;
     }
+    std::cout<<"==========================="<<std::endl;
 }
 
 // simualate the team in the provided environment
@@ -247,10 +248,28 @@ void Team::simulate(const std::string& filename, Environment environment)
         // reset the agents at the starting positions and clear the observations
         agent.set(startingX, startingY);
     }
+    
+    // Move as per policy for as many steps as in the episode length
+    int episodeLength = config["episode"]["length"].as<int>();
+    for(int stepNumber = 0; stepNumber < episodeLength; stepNumber++) {
+        // Display the current stae of all agents
+        printInfo();
+        // Get the rewards for the current team configuration
+        std::vector<std::pair<double, double>> agentPositions;
+        for (auto& agent : agents) {
+            agentPositions.push_back(agent.getPosition());
+        }
+        std::cout<<"The reward is: "<<environment.getRewards(agentPositions)<<std::endl;
 
-    for (auto& agent : agents) {
-        agent.move(agent.policy.forward((agent.observe(environment, agents))), 
-            environment);
-        
+        // Get the observation for each agent and feed it to its network to get the move
+        std::vector<std::pair<double, double>> agentDeltas;
+        for (auto& agent : agents) {
+            agentDeltas.push_back(agent.policy.forward(agent.observe(environment, agents)));
+        }
+
+        // Move each agent according to its delta
+        for (int i = 0; i < agents.size(); i++) {
+            agents[i].move(agentDeltas[i], environment);
+        }
     }
 }
