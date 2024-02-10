@@ -83,3 +83,9 @@ std::vector<POI> Environment::getPOIs() {
 std::pair<int, int> Environment::getDimensions() {
     return std::make_pair(xLength, yLength);
 }
+
+void Environment::reset() {
+    pois.clear();
+    xLength = 0;
+    yLength = 0;
+}

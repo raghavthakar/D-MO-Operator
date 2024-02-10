@@ -227,7 +227,7 @@ void Team::printInfo() {
 }
 
 // simualate the team in the provided environment
-void Team::simulate(const std::string& filename, Environment environment)
+std::vector<std::vector<int>> Team::simulate(const std::string& filename, Environment environment)
 {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
     
@@ -251,6 +251,8 @@ void Team::simulate(const std::string& filename, Environment environment)
     
     // Move as per policy for as many steps as in the episode length
     int episodeLength = config["episode"]["length"].as<int>();
+    // Reward at each timestep in this episode
+    std::vector<std::vector<int>> rewardHistory; 
     for(int stepNumber = 0; stepNumber < episodeLength; stepNumber++) {
         // Display the current stae of all agents
         printInfo();
@@ -259,7 +261,9 @@ void Team::simulate(const std::string& filename, Environment environment)
         for (auto& agent : agents) {
             agentPositions.push_back(agent.getPosition());
         }
-        std::cout<<"The reward is: "<<environment.getRewards(agentPositions)<<std::endl;
+
+        rewardHistory.push_back(environment.getRewards(agentPositions));
+        std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
 
         // Get the observation for each agent and feed it to its network to get the move
         std::vector<std::pair<double, double>> agentDeltas;
@@ -272,4 +276,6 @@ void Team::simulate(const std::string& filename, Environment environment)
             agents[i].move(agentDeltas[i], environment);
         }
     }
+
+    return rewardHistory;
 }

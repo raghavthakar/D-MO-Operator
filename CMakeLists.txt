@@ -18,6 +18,7 @@ set(SOURCES
     src/environment.cpp
     src/policy.cpp
     src/team.cpp
+    src/evolutionary.cpp
     src/main.cpp
 )
 

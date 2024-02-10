@@ -44,6 +44,9 @@ public:
     // Method to print information about loaded POIs
     void printInfo() const;
 
+    // Clear all the stored POIs and set other members to 0
+    void reset();
+
 };
 
 #endif // ENVIRONMENT_H

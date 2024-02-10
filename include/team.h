@@ -42,9 +42,10 @@ class Team {
 public:
     std::vector<Agent> agents; // Vector to store agents in team
     int id;
+    Team();
     Team(const std::string& filename, int id); // Constructor
     void printInfo();
-    void simulate(const std::string& filename, Environment environment);
+    std::vector<std::vector<int>> simulate(const std::string& filename, Environment environment);
 };
 
 #endif // TEAM_H

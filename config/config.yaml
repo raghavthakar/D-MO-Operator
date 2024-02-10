@@ -24,8 +24,6 @@ environment:
   dimensions:
     xLength: 100
     yLength: 100
-  
-  numberOfTeams: 1000 # Will decide the number of policies for each agent in the population
 
 episode:
   length: 100
@@ -40,3 +38,8 @@ agent:
   maxStepSize: 4
   observationRadius: 5
   numberOfSensors: 4
+
+evolutionary:
+  populationSize: 1 # Will decide the number of policies for each agent in the population
+  numberOfEpisodes: 10
+  numberOfGenerations: 50
