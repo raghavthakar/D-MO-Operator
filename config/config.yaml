@@ -1,26 +1,11 @@
 environment:
-  randomPOIs: false
+  randomPOIs: false # New POIs every episode or not?
+  numberOfPOIs: 8
   numberOfClassIds: 2
   coupling: 2
   reward: 30
+  observationRadius: 5.0
   penalty: -1
-  pois:
-    - id: 0
-      classId: 0
-      x: 50.0
-      y: 50.0
-      observationRadius: 5.0
-    - id: 1
-      classId: 1
-      x: 80.0
-      y: 80.0
-      observationRadius: 5
-    - id: 2
-      classId: 1
-      x: 10.0
-      y: 10.0
-      observationRadius: 6.0
-  
   dimensions:
     xLength: 100
     yLength: 100

@@ -15,12 +15,27 @@ void Environment::loadConfig(const std::string& filename) {
     xLength = dimensions["xLength"].as<double>();
     yLength = dimensions["yLength"].as<double>(); // Read the environment dimensions into the object
 
-    for (const auto& poi : config["environment"]["pois"]) {
-        pois.emplace_back(poi["id"].as<int>(), poi["classId"].as<int>(), poi["x"].as<double>(), 
-        poi["y"].as<double>(), poi["observationRadius"].as<double>(),
-        config["environment"]["coupling"].as<int>(),
-        config["environment"]["reward"].as<int>(),
-        config["environment"]["penalty"].as<int>()); // Create POI object and add to vector
+    int numberOfPOIs = config["environment"]["numberOfPOIs"].as<int>();
+    int numberOfClassIDs = config["environment"]["numberOfClassIds"].as<int>();
+
+    int poisPerClass = numberOfPOIs / numberOfClassIDs;
+    int remainingPOIs = numberOfPOIs % numberOfClassIDs;
+
+    int poi_num = 0; // Initialize poi_num outside the loop
+    for (int classID = 0; classID < numberOfClassIDs; ++classID) {
+        int poisToAdd = poisPerClass + (classID < remainingPOIs ? 1 : 0);
+        for (int i = 0; i < poisToAdd; ++i) {
+            // Random POI position
+            double poi_x = rand() % xLength;
+            double poi_y = rand() % yLength;
+
+            // Put into list
+            pois.emplace_back(poi_num++, classID, poi_x, poi_y, 
+            config["environment"]["observationRadius"].as<double>(),
+            config["environment"]["coupling"].as<int>(),
+            config["environment"]["reward"].as<int>(),
+            config["environment"]["penalty"].as<int>()); // Create POI object and add to vector
+        }
     }
 }
 

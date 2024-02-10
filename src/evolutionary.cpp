@@ -27,3 +27,34 @@ Evolutionary::Evolutionary(const std::string& filename) {
         population.push_back(Individual(filename, i)); // Create a population of individuals with id
     }
 }
+
+// DECIDE and Generate as many environment configurations as numberOfEpisodes
+std::vector<Environment> Evolutionary::generateTestEnvironments
+    (const std::string& filename) {
+    YAML::Node config = YAML::LoadFile(filename);
+
+    int numberOfEnvironments = numberOfEpisodes;
+    bool randomPOIs = config["environment"]["randomPOIs"].as<bool>();
+
+    std::vector<Environment> testEnvironments;
+    
+    Environment env;
+    env.loadConfig(filename);
+    for(int i = 0; i < numberOfEnvironments; i++) {
+        if (randomPOIs) env.loadConfig(filename);
+        testEnvironments.push_back(env);
+    }
+
+    return testEnvironments;
+}
+
+// Actually run the simulation across teams and evolve them
+void Evolutionary::evolve(const std::string& filename) {
+    std::vector<Environment> envs = generateTestEnvironments(filename);
+
+    for(auto env : envs) {
+        for (auto& ind : population) {
+            ind.evaluate(filename, env);
+        }
+    }
+}

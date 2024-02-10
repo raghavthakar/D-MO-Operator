@@ -25,8 +25,11 @@ class Evolutionary {
     int numberOfEpisodes;
     int populationSize;
 public:
-    Evolutionary(const std::string& filename);
     std::vector<Individual> population;
+    Evolutionary(const std::string& filename);
+    std::vector<Environment> generateTestEnvironments
+        (const std::string& filename);
+    void evolve(const std::string& filename);
 };
 
 
