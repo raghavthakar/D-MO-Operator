@@ -12,12 +12,12 @@
 
 class Individual {
     Team team;
-    int id;
 public:
+    int id;
     // wrapper around a team to keep it in the population
     Individual(const std::string& filename, int id);
     // evaluate a team by simulating it and adding the rewards
-    void evaluate(const std::string& filename, Environment environment);
+    std::vector<int> evaluate(const std::string& filename, std::vector<Environment> environments);
 };
 
 class Evolutionary {

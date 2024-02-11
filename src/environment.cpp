@@ -70,9 +70,7 @@ std::vector<int> Environment::getRewards(std::vector<std::pair<double, double>> 
                 numberOfCloseAgents++;
         }
 
-        rewardVector[poi.classId] = (numberOfCloseAgents >= poi.coupling) ? 
-            (rewardVector[poi.classId] + poi.reward) :
-            (rewardVector[poi.classId]);
+        rewardVector[poi.classId] = (numberOfCloseAgents >= poi.coupling) ? (rewardVector[poi.classId] + poi.reward) : (rewardVector[poi.classId]);
     }
 
     // Add in the penalties of each agent to each objective reward

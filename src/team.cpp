@@ -223,10 +223,10 @@ void Team::printInfo() {
         std::cout<<"    Agent position: "<<agent.getPosition().first
         <<","<<agent.getPosition().second<<std::endl;
     }
-    std::cout<<"==========================="<<std::endl;
+    std::cout<<"======="<<std::endl;
 }
 
-// simualate the team in the provided environment
+// simualate the team in the provided environment. Returns a vecotr of rewards from each timestep
 std::vector<std::vector<int>> Team::simulate(const std::string& filename, Environment environment)
 {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
@@ -255,7 +255,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
     std::vector<std::vector<int>> rewardHistory; 
     for(int stepNumber = 0; stepNumber < episodeLength; stepNumber++) {
         // Display the current stae of all agents
-        printInfo();
+        // printInfo();
         // Get the rewards for the current team configuration
         std::vector<std::pair<double, double>> agentPositions;
         for (auto& agent : agents) {
@@ -263,7 +263,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         }
 
         rewardHistory.push_back(environment.getRewards(agentPositions));
-        std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
+        // std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
 
         // Get the observation for each agent and feed it to its network to get the move
         std::vector<std::pair<double, double>> agentDeltas;

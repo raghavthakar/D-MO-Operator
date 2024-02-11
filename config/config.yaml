@@ -2,7 +2,7 @@ environment:
   randomPOIs: false # New POIs every episode or not?
   numberOfPOIs: 8
   numberOfClassIds: 2
-  coupling: 2
+  coupling: 1
   reward: 30
   observationRadius: 5.0
   penalty: -1
@@ -11,7 +11,7 @@ environment:
     yLength: 100
 
 episode:
-  length: 100
+  length: 10
 
 team:
   numberOfAgents: 3
@@ -25,6 +25,6 @@ agent:
   numberOfSensors: 4
 
 evolutionary:
-  populationSize: 1 # Will decide the number of policies for each agent in the population
-  numberOfEpisodes: 10
+  populationSize: 3 # Will decide the number of policies for each agent in the population
+  numberOfEpisodes: 4
   numberOfGenerations: 50
