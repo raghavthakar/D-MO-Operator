@@ -11,7 +11,7 @@ environment:
     yLength: 100
 
 episode:
-  length: 10
+  length: 100
 
 team:
   numberOfAgents: 3
@@ -25,6 +25,6 @@ agent:
   numberOfSensors: 4
 
 evolutionary:
-  populationSize: 3 # Will decide the number of policies for each agent in the population
-  numberOfEpisodes: 4
+  populationSize: 15 # Will decide the number of candidate policies for each agent in the population
+  numberOfEpisodes: 10
   numberOfGenerations: 50

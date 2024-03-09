@@ -37,3 +37,6 @@ libtorch
 
 # build
 build
+
+# VS Code configs
+.vscode
