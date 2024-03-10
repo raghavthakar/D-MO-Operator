@@ -1,12 +1,13 @@
 #include "environment.h"
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include <yaml-cpp/yaml.h>
 
 POI::POI(int id, int classId, double x, double y, double observationRadius, int coupling, 
-    int reward, int penalty)
+    int reward, std::pair<int, int> observableWindow)
     : id(id), classId(classId), x(x), y(y), observationRadius(observationRadius), coupling(coupling), 
-    reward(reward), penalty(penalty) {}
+    reward(reward), observableWindow(observableWindow){}
 
 void Environment::loadConfig(const std::string& filename) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
@@ -15,32 +16,93 @@ void Environment::loadConfig(const std::string& filename) {
     xLength = dimensions["xLength"].as<double>();
     yLength = dimensions["yLength"].as<double>(); // Read the environment dimensions into the object
 
+    penalty = config["environment"]["penalty"].as<int>();
+
     int numberOfPOIs = config["environment"]["numberOfPOIs"].as<int>();
     int numberOfClassIDs = config["environment"]["numberOfClassIds"].as<int>();
 
     int poisPerClass = numberOfPOIs / numberOfClassIDs;
     int remainingPOIs = numberOfPOIs % numberOfClassIDs;
 
-    int poi_num = 0; // Initialize poi_num outside the loop
-    for (int classID = 0; classID < numberOfClassIDs; ++classID) {
-        int poisToAdd = poisPerClass + (classID < remainingPOIs ? 1 : 0);
-        for (int i = 0; i < poisToAdd; ++i) {
-            // Random POI position
-            double poi_x = rand() % xLength;
-            double poi_y = rand() % yLength;
+    bool randomPOIConfig = config["environment"]["randomPOIConfig"].as<bool>();
 
-            // Put into list
-            pois.emplace_back(poi_num++, classID, poi_x, poi_y, 
-            config["environment"]["observationRadius"].as<double>(),
-            config["environment"]["coupling"].as<int>(),
-            config["environment"]["reward"].as<int>(),
-            config["environment"]["penalty"].as<int>()); // Create POI object and add to vector
+    // Load up an environment configuration
+
+    // Generate and add random POIs if true
+    if (randomPOIConfig == true) {
+        int poi_num = 0; // Initialize poi_num outside the loop
+        for (int classID = 0; classID < numberOfClassIDs; ++classID) {
+            int poisToAdd = poisPerClass + (classID < remainingPOIs ? 1 : 0);
+            for (int i = 0; i < poisToAdd; ++i) {
+                // Random POI position
+                double poi_x = rand() % xLength;
+                double poi_y = rand() % yLength;
+
+                std::pair<int, int> observableWindow;
+
+                if (config["environment"]["eternalPOIs"].as<bool>() == true) {
+                    // set observable window to eternity
+                    observableWindow = std::make_pair(0, std::numeric_limits<int>::max());
+                }
+                else {
+                    observableWindow = std::make_pair(config["environment"]["observableWindow"][0].as<int>(), 
+                                                    config["environment"]["observableWindow"][1].as<int>());
+                }
+
+                // Put into list
+                pois.emplace_back(poi_num++, classID, poi_x, poi_y, 
+                    config["environment"]["observationRadius"].as<double>(),
+                    config["environment"]["coupling"].as<int>(),
+                    config["environment"]["reward"].as<int>(),
+                    observableWindow); // Create POI object and add to vector
+            }
         }
     }
+    // Else, read the configs from poi list in config and add pois
+    else {
+        for (const auto& poi: config["environment"]["POIs"]) {
+            int poi_id = poi["id"].as<int>();
+            if (poi_id > numberOfPOIs+1 || poi_id < 0) {
+                std::cout<<"Invalid POI config"<<std::endl;
+                exit(1);
+            }
+
+            int class_id = poi["classID"].as<int>();
+            if (class_id > numberOfClassIDs+1 || class_id < 0) {
+                std::cout<<"Invalid POI config"<<std::endl;
+                exit(1);
+            }
+
+            double poi_x = poi["poi_x"].as<double>();
+            double poi_y = poi["poi_y"].as<double>();
+            if (poi_x > xLength || poi_x < 0 || poi_y > yLength || poi_y < 0) {
+                std::cout<<"Invalid POI config"<<std::endl;
+                exit(1);
+            }
+
+            std::pair<int, int> observableWindow;
+            if (poi["eternalPOI"].as<bool>() == true) {
+                    // set observable window to eternity
+                    observableWindow = std::make_pair(0, std::numeric_limits<int>::max());
+                }
+                else {
+                    observableWindow = std::make_pair(poi["observableWindow"][0].as<int>(), 
+                                                        poi["observableWindow"][1].as<int>());
+                }
+
+            pois.emplace_back(poi_id, class_id, poi_x, poi_y, 
+                    poi["observationRadius"].as<double>(),
+                    poi["coupling"].as<int>(),
+                    poi["reward"].as<int>(),
+                    observableWindow); // Create POI object and add to vector
+        }
+    }
+    
 }
 
 // compute the rewards generated by the provided agents configuration
-std::vector<int> Environment::getRewards(std::vector<std::pair<double, double>> agentPositions) {
+std::vector<int> Environment::getRewards(std::vector<std::pair<double, double>> agentPositions,
+                                        int stepNumber) {
     std::vector<int> rewardVector;
 
     // Determine the number of unique class IDs
@@ -70,12 +132,17 @@ std::vector<int> Environment::getRewards(std::vector<std::pair<double, double>> 
                 numberOfCloseAgents++;
         }
 
-        rewardVector[poi.classId] = (numberOfCloseAgents >= poi.coupling) ? (rewardVector[poi.classId] + poi.reward) : (rewardVector[poi.classId]);
+        // increase the rewards if agent within POI's observation radius & 
+        // timestep within the POI's observableWindow
+        if (numberOfCloseAgents >= poi.coupling && stepNumber >= poi.observableWindow.first
+            && stepNumber <= poi.observableWindow.second) {
+            rewardVector[poi.classId] += poi.reward;
+        }
     }
 
     // Add in the penalties of each agent to each objective reward
     for(int i = 0; i < rewardVector.size(); i++)
-        rewardVector[i] += agentPositions.size() * pois[0].penalty;
+        rewardVector[i] += agentPositions.size() * penalty;
 
     return rewardVector;
 }
@@ -85,7 +152,8 @@ void Environment::printInfo() const {
     for (const auto& poi : pois) {
         std::cout << "ID: " << poi.id << ", Class: " << poi.classId 
         << ", Coordinates: (" << poi.x << ", " << poi.y << "), Observation Radius: " 
-        << poi.observationRadius << std::endl;
+        << poi.observationRadius << ", ObsWindow: [" << poi.observableWindow.first << ","
+        << poi.observableWindow.second << "]" << " Reward: " << poi.reward << std::endl;
     }
 }
 
@@ -101,4 +169,5 @@ void Environment::reset() {
     pois.clear();
     xLength = 0;
     yLength = 0;
+    penalty = 0;
 }

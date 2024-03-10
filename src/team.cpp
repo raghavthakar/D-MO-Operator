@@ -262,7 +262,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
             agentPositions.push_back(agent.getPosition());
         }
 
-        rewardHistory.push_back(environment.getRewards(agentPositions));
+        rewardHistory.push_back(environment.getRewards(agentPositions, stepNumber));
         // std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
 
         // Get the observation for each agent and feed it to its network to get the move

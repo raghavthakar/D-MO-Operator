@@ -56,14 +56,15 @@ std::vector<Environment> Evolutionary::generateTestEnvironments
     YAML::Node config = YAML::LoadFile(filename);
 
     int numberOfEnvironments = numberOfEpisodes;
-    bool randomPOIs = config["environment"]["randomPOIs"].as<bool>();
+    bool differentEnvs = config["environment"]["differentEnvs"].as<bool>();
 
     std::vector<Environment> testEnvironments;
     
     Environment env;
     env.loadConfig(filename);
     for(int i = 0; i < numberOfEnvironments; i++) {
-        if (randomPOIs) {
+        // Load up a new env configuration if env should be different for each episode
+        if (differentEnvs) {
             env.reset();
             env.loadConfig(filename);
         }
@@ -87,6 +88,6 @@ void Evolutionary::evolve(const std::string& filename) {
     // Now we have a lsit of environments, one environment for each episode
     // Each individual needs to be simualted in each environment (AKA each episode)
     for (auto individual : population) {
-        std::cout<<"Individual "<<individual.id<<"'s reward: "<<individual.evaluate(filename, envs)<<std::endl; 
+        std::cout<<"Individual "<<individual.id<<"'s fitness: "<<individual.evaluate(filename, envs)<<std::endl; 
     }
 }

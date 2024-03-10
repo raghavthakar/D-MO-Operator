@@ -1,20 +1,106 @@
 environment:
-  randomPOIs: false # New POIs every episode or not?
+  differentEnvs: false # New env config every episode or not?
   numberOfPOIs: 8
   numberOfClassIds: 2
-  coupling: 1
-  reward: 30
-  observationRadius: 5.0
-  penalty: -1
   dimensions:
     xLength: 100
     yLength: 100
+  penalty: -1 # Timestep penalty per agent
+  
+  coupling: 1
+  reward: 30
+  observationRadius: 5.0
+  eternalPOIs: true
+  observableWindow: [0, 25] # Timesteps at which POI appears and disappears respectively
+  
+  randomPOIConfig: false # If POIs should be generated randomly
+
+  POIs:
+    - id: 0
+      classID: 0
+      poi_x: 10
+      poi_y: 10
+      observationRadius: 5.0
+      coupling: 1
+      reward: 1
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+    
+    - id: 1
+      classID: 0
+      poi_x: 20
+      poi_y: 20
+      observationRadius: 5.0
+      coupling: 1
+      reward: 1
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+    
+    - id: 2
+      classID: 0
+      poi_x: 30
+      poi_y: 30
+      observationRadius: 5.0
+      coupling: 1
+      reward: 1
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+    
+    - id: 3
+      classID: 0
+      poi_x: 40
+      poi_y: 40
+      observationRadius: 5.0
+      coupling: 1
+      reward: 1
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+    
+    - id: 4
+      classID: 1
+      poi_x: 50
+      poi_y: 50
+      observationRadius: 5.0
+      coupling: 1
+      reward: 30
+      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      observableWindow: [0, 25] # Timesteps at which POI appears and disappears respectively
+    
+    - id: 5
+      classID: 1
+      poi_x: 60
+      poi_y: 60
+      observationRadius: 5.0
+      coupling: 1
+      reward: 30
+      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      observableWindow: [25, 50] # Timesteps at which POI appears and disappears respectively
+
+    - id: 6
+      classID: 1
+      poi_x: 70
+      poi_y: 70
+      observationRadius: 5.0
+      coupling: 1
+      reward: 30
+      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      observableWindow: [50, 75] # Timesteps at which POI appears and disappears respectively
+
+    
+    - id: 7
+      classID: 1
+      poi_x: 80
+      poi_y: 80
+      observationRadius: 5.0
+      coupling: 1
+      reward: 30
+      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      observableWindow: [75, 100] # Timesteps at which POI appears and disappears respectively
+# --------------------------------------
 
 episode:
   length: 100
+# --------------------------------------
 
 team:
   numberOfAgents: 3
+# --------------------------------------
 
 agent:
   randomStartPosition: true
@@ -23,8 +109,10 @@ agent:
   maxStepSize: 4
   observationRadius: 5
   numberOfSensors: 4
+# --------------------------------------
 
 evolutionary:
-  populationSize: 15 # Will decide the number of candidate policies for each agent in the population
-  numberOfEpisodes: 10
+  populationSize: 15 # Will decide the number of joint policies in the population
+  numberOfEpisodes: 1 # How many environments an individiual in the generation will be tested on
   numberOfGenerations: 50
+# --------------------------------------
