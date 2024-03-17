@@ -104,7 +104,7 @@ team:
 
 agent:
   randomStartPosition: true
-  startingX: 9
+  startingX: 19
   startingY: 11
   maxStepSize: 4
   observationRadius: 5

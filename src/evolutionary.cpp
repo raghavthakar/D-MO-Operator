@@ -34,6 +34,8 @@ std::vector<int> Individual::evaluate(const std::string& filename, std::vector<E
         }
     }
 
+    // set the fitness of the individual
+    fitness = combinedCumulativeRewards;
     return combinedCumulativeRewards;
 }
 
@@ -81,13 +83,54 @@ std::vector<Environment> Evolutionary::generateTestEnvironments
     return testEnvironments;
 }
 
+// Compute the hypervolume contained by the given pareto front
+double Evolutionary::getHypervolume(std::vector<Individual> individuals, int hypervolumeOrigin) {
+    // get the hypervolume computation reference point from the origin
+    std::vector<int> referencePoint(individuals[0].fitness.size(), hypervolumeOrigin);
+
+    // Manual sorting of individuals based on fitness of 0th objective
+    for (size_t i = 0; i < individuals.size(); ++i) {
+        for (size_t j = i + 1; j < individuals.size(); ++j) {
+            // Compare fitness values of adjacent individuals
+            if (individuals[j].fitness[0] < individuals[i].fitness[0]) {
+                // Swap individuals if necessary
+                std::swap(individuals[i], individuals[j]);
+            }
+        }
+    }
+
+    double hypervolume = 0.0;
+
+    // Calculate hypervolume contribution for each individual
+    for (size_t i = 0; i < individuals.size(); ++i) {
+        double volume = 1.0;
+        for (size_t j = 0; j < individuals[i].fitness.size(); ++j) {
+            volume *= referencePoint[j] - individuals[i].fitness[j];
+        }
+        hypervolume += volume;
+    }
+
+    return hypervolume;
+}
+
 // Actually run the simulation across teams and evolve them
 void Evolutionary::evolve(const std::string& filename) {
     std::vector<Environment> envs = generateTestEnvironments(filename);
 
+    // Compute the origin for the hypervolume computation
+    YAML::Node config = YAML::LoadFile(filename);
+    const int hypervolumeOrigin = config["team"]["numberOfAgents"].as<int>()
+                                    * config["episode"]["length"].as<int>()
+                                    * config["environment"]["penalty"].as<int>();
+    
+    std::cout<<"Hypervolume origin is: "<<hypervolumeOrigin<<std::endl;
+
     // Now we have a lsit of environments, one environment for each episode
     // Each individual needs to be simualted in each environment (AKA each episode)
-    for (auto individual : population) {
-        std::cout<<"Individual "<<individual.id<<"'s fitness: "<<individual.evaluate(filename, envs)<<std::endl; 
+    for (auto& individual : population) {
+        individual.evaluate(filename, envs);
+        std::cout<<"Individual "<<individual.id<<"'s fitness: "<<individual.fitness<<std::endl; 
     }
+
+    std::cout<<"The hypervolume is: "<<getHypervolume(population, hypervolumeOrigin)<<std::endl;
 }

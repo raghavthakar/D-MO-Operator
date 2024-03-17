@@ -14,6 +14,7 @@ class Individual {
     Team team;
 public:
     int id;
+    std::vector<int> fitness;
     // wrapper around a team to keep it in the population
     Individual(const std::string& filename, int id);
     // evaluate a team by simulating it and adding the rewards
@@ -24,11 +25,13 @@ class Evolutionary {
     int numberOfGenerations;
     int numberOfEpisodes;
     int populationSize;
-public:
-    std::vector<Individual> population;
-    Evolutionary(const std::string& filename);
     std::vector<Environment> generateTestEnvironments
         (const std::string& filename);
+    double getHypervolume(std::vector<Individual> individuals, int hypervolumeOrigin); // computes the hypervolume of the given list of individuals
+public:
+    std::vector<Individual> population;
+    std::vector<Individual> paretoFront;
+    Evolutionary(const std::string& filename);
     void evolve(const std::string& filename);
 };
 
