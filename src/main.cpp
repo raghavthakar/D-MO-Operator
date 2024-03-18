@@ -1,13 +1,8 @@
 #include <iostream>
 #include <chrono>
 #include "evolutionary.h"
-#include <pagmo/problem.hpp>
-#include <pagmo/problems/rosenbrock.hpp>
 
 int main() {
-    // Define the problem
-    pagmo::problem prob{pagmo::rosenbrock(2)};
-
     // Start the timer
     auto start = std::chrono::steady_clock::now();
 

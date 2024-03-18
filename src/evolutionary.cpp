@@ -4,6 +4,8 @@
 #include "team.h"
 #include <vector>
 #include <yaml-cpp/yaml.h>
+#include <pagmo/utils/hypervolume.hpp>
+#include <pagmo/types.hpp>
 #include <limits>
 
 const int NONE = std::numeric_limits<int>::min();
@@ -94,33 +96,23 @@ std::vector<Environment> Evolutionary::generateTestEnvironments
 }
 
 // Compute the hypervolume contained by the given pareto front
-double Evolutionary::getHypervolume(std::vector<Individual> individuals, int hypervolumeReference) {
+double Evolutionary::getHypervolume(std::vector<Individual> individuals, int lowerBound) {
     // get the hypervolume computation reference point from the origin
-    std::vector<int> referencePoint(individuals[0].fitness.size(), hypervolumeReference);
-
-    // Manual sorting of individuals based on fitness of 0th objective
-    for (size_t i = 0; i < individuals.size(); ++i) {
-        for (size_t j = i + 1; j < individuals.size(); ++j) {
-            // Compare fitness values of adjacent individuals
-            if (individuals[j].fitness[0] < individuals[i].fitness[0]) {
-                // Swap individuals if necessary
-                std::swap(individuals[i], individuals[j]);
-            }
-        }
+    // reference poitn is -ve of original as pagmo likes it to be bigger than any other point
+    // but for us it is smaller, so ive flipped signs everywhere for hypervolume computattion
+    pagmo::vector_double referencePoint(individuals[0].fitness.size(), -lowerBound);
+   
+    // Just a dirty way to get the fitnesses from the individuals and feed to pagmo hypervol compute
+    std::vector<pagmo::vector_double> fitnesses;
+    for (auto ind : individuals) {
+        pagmo::vector_double fit;
+        for (auto f:ind.fitness)
+            fit.push_back(-f);
+        fitnesses.push_back(fit);
     }
+    pagmo::hypervolume h(fitnesses);
+    return h.compute(referencePoint);
 
-    double hypervolume = 0.0;
-
-    // Calculate hypervolume contribution for each individual
-    for (size_t i = 0; i < individuals.size(); ++i) {
-        double volume = 1.0;
-        for (size_t j = 0; j < individuals[i].fitness.size(); ++j) {
-            volume *= referencePoint[j] - individuals[i].fitness[j];
-        }
-        hypervolume += volume;
-    }
-
-    return hypervolume;
 }
 
 // finds if the individual a dominates individual b
@@ -175,11 +167,6 @@ void Evolutionary::evolve(const std::string& filename) {
 
     // Compute the origin for the hypervolume computation
     YAML::Node config = YAML::LoadFile(filename);
-    const int hypervolumeReference = config["team"]["numberOfAgents"].as<int>()
-                                    * config["episode"]["length"].as<int>()
-                                    * config["environment"]["penalty"].as<int>();
-    
-    std::cout<<"Hypervolume origin is: "<<hypervolumeReference<<std::endl;
 
     // Now we have a lsit of environments, one environment for each episode
     // Each individual needs to be simualted in each environment (AKA each episode)
@@ -188,11 +175,17 @@ void Evolutionary::evolve(const std::string& filename) {
         std::cout<<"Individual "<<individual.id<<"'s fitness: "<<individual.fitness<<std::endl; 
     }
 
-    std::cout<<"The hypervolume is: "<<getHypervolume(population, hypervolumeReference)<<std::endl;
-
     std::vector<Individual> pf = findParetoFront(population);
 
     std::cout<<"PF:\n";
     for(auto cc: pf)
         std::cout<<cc.id<<std::endl;
+    
+    const int lowerBound = config["team"]["numberOfAgents"].as<int>()
+                                    * config["episode"]["length"].as<int>()
+                                    * config["environment"]["penalty"].as<int>();
+    
+    std::cout<<"Hypervolume origin is: "<<lowerBound<<std::endl;
+    
+    std::cout<<"The hypervolume is: "<<getHypervolume(pf, lowerBound)<<std::endl;
 }

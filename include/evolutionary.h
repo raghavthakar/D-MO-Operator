@@ -9,6 +9,7 @@
 #include <utility>
 #include <cmath>
 #include <unordered_set>
+#include <pagmo/utils/hypervolume.hpp>
 
 class Individual {
     Team team;
