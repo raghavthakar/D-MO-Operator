@@ -9,6 +9,9 @@ set(CMAKE_PREFIX_PATH libtorch)
 find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
+# Look for an installation of pagmo in the system.
+find_package(Pagmo REQUIRED)
+
 # Include directories
 include_directories(include)
 include_directories("libtorch/include")
@@ -28,3 +31,4 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 # Link the yaml-cpp library
 target_link_libraries(${PROJECT_NAME} yaml-cpp)
 target_link_libraries(${PROJECT_NAME} "${TORCH_LIBRARIES}")
+target_link_libraries(${PROJECT_NAME} Pagmo::pagmo)

@@ -28,6 +28,8 @@ class Evolutionary {
     std::vector<Environment> generateTestEnvironments
         (const std::string& filename);
     double getHypervolume(std::vector<Individual> individuals, int hypervolumeOrigin); // computes the hypervolume of the given list of individuals
+    bool dominates(Individual a, Individual b); // finds if the individual a dominates individual b
+    std::vector<Individual> findParetoFront(const std::vector<Individual>& population); // finds and returns the pareto front in a population
 public:
     std::vector<Individual> population;
     std::vector<Individual> paretoFront;

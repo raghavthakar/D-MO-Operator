@@ -4,9 +4,19 @@
 #include "team.h"
 #include <vector>
 #include <yaml-cpp/yaml.h>
+#include <limits>
 
-Individual::Individual(const std::string& filename, int id) : 
-    team(filename, id), id(id){}
+const int NONE = std::numeric_limits<int>::min();
+
+Individual::Individual(const std::string& filename, int id) : team(filename, id), id(id) {
+    YAML::Node config = YAML::LoadFile(filename);
+
+    // Initialise the fitness of the individual as NONE
+    int numberOfObjectives = config["environment"]["numberOfClassIds"].as<int>();
+    for(int i = 0; i < numberOfObjectives; i++) {
+        fitness.push_back(NONE);
+    }
+}
 
 std::vector<int> Individual::evaluate(const std::string& filename, std::vector<Environment> environments) {
     std::vector<std::vector<int>> stepwiseEpisodeReward; // Reward vector from each step of an episode
@@ -84,9 +94,9 @@ std::vector<Environment> Evolutionary::generateTestEnvironments
 }
 
 // Compute the hypervolume contained by the given pareto front
-double Evolutionary::getHypervolume(std::vector<Individual> individuals, int hypervolumeOrigin) {
+double Evolutionary::getHypervolume(std::vector<Individual> individuals, int hypervolumeReference) {
     // get the hypervolume computation reference point from the origin
-    std::vector<int> referencePoint(individuals[0].fitness.size(), hypervolumeOrigin);
+    std::vector<int> referencePoint(individuals[0].fitness.size(), hypervolumeReference);
 
     // Manual sorting of individuals based on fitness of 0th objective
     for (size_t i = 0; i < individuals.size(); ++i) {
@@ -113,17 +123,63 @@ double Evolutionary::getHypervolume(std::vector<Individual> individuals, int hyp
     return hypervolume;
 }
 
+// finds if the individual a dominates individual b
+bool Evolutionary::dominates(Individual a, Individual b) {
+    if (a.fitness.size() != b.fitness.size()) {
+        std::cout<<"Cannot find dominating solution. Imbalanced fitnesses";
+        exit(1);
+    }
+    else if (a.fitness[0] == NONE || b.fitness[0] == NONE) {
+        std::cout<<"Cannot find dominating solution. NONE fitnesses";
+        exit(1);
+    }
+
+    for (int i = 0; i < a.fitness.size(); i++) {
+        if (a.fitness[i] < b.fitness[i])
+            return false;
+    }
+
+    return true;
+}
+
+// Find and return the pareto front of the given population
+std::vector<Individual> Evolutionary::findParetoFront(const std::vector<Individual>& population) {
+    std::vector<Individual> paretoFront;
+
+    for (const Individual& individual : population) {
+        bool isNonDominated = true;
+
+        // Check if the individual is non-dominated by comparing its fitness with others
+        for (const Individual& other : population) {
+            if (&individual != &other) { // Skip self-comparison
+            // if other dominates individual, then individual should not be on pareto front
+                if (dominates(other, individual)) {
+                    isNonDominated = false;
+                    break;
+                }
+            }
+        }
+
+        // If the individual is non-dominated, add it to the Pareto front
+        if (isNonDominated) {
+            paretoFront.push_back(individual);
+        }
+    }
+
+    return paretoFront;
+}
+
 // Actually run the simulation across teams and evolve them
 void Evolutionary::evolve(const std::string& filename) {
     std::vector<Environment> envs = generateTestEnvironments(filename);
 
     // Compute the origin for the hypervolume computation
     YAML::Node config = YAML::LoadFile(filename);
-    const int hypervolumeOrigin = config["team"]["numberOfAgents"].as<int>()
+    const int hypervolumeReference = config["team"]["numberOfAgents"].as<int>()
                                     * config["episode"]["length"].as<int>()
                                     * config["environment"]["penalty"].as<int>();
     
-    std::cout<<"Hypervolume origin is: "<<hypervolumeOrigin<<std::endl;
+    std::cout<<"Hypervolume origin is: "<<hypervolumeReference<<std::endl;
 
     // Now we have a lsit of environments, one environment for each episode
     // Each individual needs to be simualted in each environment (AKA each episode)
@@ -132,5 +188,11 @@ void Evolutionary::evolve(const std::string& filename) {
         std::cout<<"Individual "<<individual.id<<"'s fitness: "<<individual.fitness<<std::endl; 
     }
 
-    std::cout<<"The hypervolume is: "<<getHypervolume(population, hypervolumeOrigin)<<std::endl;
+    std::cout<<"The hypervolume is: "<<getHypervolume(population, hypervolumeReference)<<std::endl;
+
+    std::vector<Individual> pf = findParetoFront(population);
+
+    std::cout<<"PF:\n";
+    for(auto cc: pf)
+        std::cout<<cc.id<<std::endl;
 }
