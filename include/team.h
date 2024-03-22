@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <utility>
 
 class Agent {
 private:
@@ -42,10 +43,12 @@ class Team {
 public:
     std::vector<Agent> agents; // Vector to store agents in team
     int id;
+    std::vector<std::vector<std::pair<double, double>>> teamTrajectory;
     Team();
     Team(const std::string& filename, int id); // Constructor
     void printInfo();
     std::vector<std::vector<int>> simulate(const std::string& filename, Environment environment);
+    std::vector<std::vector<int>> replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType);
 };
 
 #endif // TEAM_H

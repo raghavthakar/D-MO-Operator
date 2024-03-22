@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <string>
 #include <yaml-cpp/yaml.h>
 
 template <typename T>
@@ -215,6 +216,8 @@ Team::Team(const std::string& filename, int id) {
     }
 
     this->id = id; // Store the team id
+
+    this->teamTrajectory.clear(); // clears the teamTrajectory of the team
 }
 
 void Team::printInfo() {
@@ -227,8 +230,8 @@ void Team::printInfo() {
 }
 
 // simualate the team in the provided environment. Returns a vecotr of rewards from each timestep
-std::vector<std::vector<int>> Team::simulate(const std::string& filename, Environment environment)
-{
+std::vector<std::vector<int>> Team::simulate(const std::string& filename, Environment environment) {
+
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
     
     const YAML::Node& agent_config = config["agent"]; // Agent config info
@@ -249,6 +252,8 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         agent.set(startingX, startingY);
     }
     
+    // clear the teamTrajectory of the team
+    teamTrajectory.clear();
     // Move as per policy for as many steps as in the episode length
     int episodeLength = config["episode"]["length"].as<int>();
     // Reward at each timestep in this episode
@@ -262,6 +267,10 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
             agentPositions.push_back(agent.getPosition());
         }
 
+        // push these agent positions to the teamTrajectory
+        teamTrajectory.push_back(agentPositions);
+
+        // compute the rewards for these agent positions
         rewardHistory.push_back(environment.getRewards(agentPositions, stepNumber));
         // std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
 
@@ -278,4 +287,43 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
     }
 
     return rewardHistory;
+}
+
+// re-evaluate the rewards for the team, given the counterfactual trajectory
+// TODO counterfactual evaluation find the rewards for that team
+std::vector<std::vector<int>> Team::replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType) {
+    std::vector<std::pair<double, double>> counterfactualTrajectory;
+    YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
+
+    if (counterfactualType == "static") {
+        double startingX= config["agent"]["startingX"].as<double>();
+        double startingY= config["agent"]["startingY"].as<double>();
+
+        // static counterfactual trajectory with length equal to the teamtrajectory
+        for (int i=0; i<this->teamTrajectory.size(); i++) {
+            counterfactualTrajectory.push_back(std::make_pair(startingX, startingY));
+        }
+    }
+
+    std::vector<std::vector<int>> replayRewardsWithCounterfactuals; // Stores the replay rewards with counterfactual replacements
+    std::vector<std::vector<std::pair<double, double>>> workingTeamTrajectory; // store the team trajectory copy to modify
+    // for each agent, loop through the episode, get rewards for each timestep with counterfactial replacements
+    for (int agentNum=0; agentNum<this->teamTrajectory[0].size(); agentNum++) { // loop through agents
+        workingTeamTrajectory = this->teamTrajectory;
+
+        // Loop through the working trajectory, replacing the agent position at that timestep with position from counterfactual trajectory
+        std::vector<int> episodeCounterfactualRewards(config["environment"]["numberOfClassIds"].as<int>(), 0); // Sum of timestep rewards 
+        for(int timestep = 0; timestep < workingTeamTrajectory.size(); timestep++) {
+            workingTeamTrajectory[timestep][agentNum] = counterfactualTrajectory[timestep]; // repalce the agent's position with counterfactual
+            std::vector<int> timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
+            for(int rewIndex = 0; rewIndex < timestepRewards.size(); rewIndex++) {
+                episodeCounterfactualRewards[rewIndex] += timestepRewards[rewIndex]; // add tiemstep rewards to the cumulative episode rewards
+            }
+        }
+
+        // Append the episode rewards with counterfactual for this agent to the replayReward vector
+        replayRewardsWithCounterfactuals.push_back(episodeCounterfactualRewards);
+    }
+
+    return replayRewardsWithCounterfactuals;   
 }

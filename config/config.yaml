@@ -112,7 +112,9 @@ agent:
 # --------------------------------------
 
 evolutionary:
-  populationSize: 15 # Will decide the number of joint policies in the population
+  populationSize: 50 # Will decide the number of joint policies in the population
   numberOfEpisodes: 1 # How many environments an individiual in the generation will be tested on
   numberOfGenerations: 50
+  numberOfOffsprings: 20 # How many offsprings does the population create in every generation?
+  counterfactualType: "static" # Counterfactial agent simply stays in the start position throughout
 # --------------------------------------
