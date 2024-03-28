@@ -3,14 +3,27 @@
 #include "policy.h"
 #include "team.h"
 #include <vector>
+#include <random>
 #include <yaml-cpp/yaml.h>
 #include <pagmo/utils/hypervolume.hpp>
 #include <pagmo/types.hpp>
 #include <limits>
+#include <iostream>
+#include <algorithm>
 
 const int NONE = std::numeric_limits<int>::min();
 
 Individual::Individual(const std::string& filename, int id) : team(filename, id), id(id) {
+    YAML::Node config = YAML::LoadFile(filename);
+
+    // Initialise the fitness of the individual as NONE
+    int numberOfObjectives = config["environment"]["numberOfClassIds"].as<int>();
+    for(int i = 0; i < numberOfObjectives; i++) {
+        fitness.push_back(NONE);
+    }
+}
+
+Individual::Individual(const std::string& filename, int id, std::vector<Agent> agents) : team(filename, agents, id), id(id) {
     YAML::Node config = YAML::LoadFile(filename);
 
     // Initialise the fitness of the individual as NONE
@@ -92,6 +105,11 @@ void Individual::differenceEvaluate(const std::string& filename, std::vector<Env
     }
 }
 
+// Return the team's agents
+std::vector<Agent> Individual::getAgents() {
+    return this->team.agents;
+}
+
 Evolutionary::Evolutionary(const std::string& filename) {
     YAML::Node config = YAML::LoadFile(filename);
     const YAML::Node& evolutionary_config = config["evolutionary"];
@@ -127,12 +145,12 @@ std::vector<Environment> Evolutionary::generateTestEnvironments
         testEnvironments.push_back(env);
     }
 
-    std::cout<<"''''''''''''''\nGenerated "<<numberOfEnvironments<<" environments.";
-    for (auto env : testEnvironments) {
-        std::cout<<"\nEnv:\n";
-        env.printInfo();
-    }
-    std::cout<<"'''''''''''''\n";
+    // std::cout<<"''''''''''''''\nGenerated "<<numberOfEnvironments<<" environments.";
+    // for (auto env : testEnvironments) {
+    //     std::cout<<"\nEnv:\n";
+    //     env.printInfo();
+    // }
+    // std::cout<<"'''''''''''''\n";
 
     return testEnvironments;
 }
@@ -250,6 +268,55 @@ std::vector<Individual> EvolutionaryUtils::without(const std::vector<Individual>
     return populationWithout;
 }
 
+// Select an element from a row using softmax selection
+int EvolutionaryUtils::softmaxSelection(std::vector<double> probabilities) {
+    std::random_device rd; // Obtain a random number from hardware
+    std::mt19937 gen(rd()); // Seed the random number engine with rd
+    // Define a distribution for the random numbers
+    std::uniform_int_distribution<int> randomIndexDistribution(0, probabilities.size()); // Generate integers between 0 and length of proabbilities
+    
+    // find the max element
+    int maxElement = *(std::max_element(probabilities.begin(), probabilities.end()));
+    
+    // return a random index if the max element is 0 (ie all elems are 0)
+    if (int(maxElement) <= 0) {
+        return randomIndexDistribution(gen);
+    } 
+    else {
+        // normalise the probabilities values
+        for (int i=0; i<probabilities.size(); i++) {
+            probabilities[i] /= maxElement;
+        }
+
+        std::uniform_real_distribution<double> randomProbabilityDistribution(0, 1);
+        double selectionProbability = randomProbabilityDistribution(gen);
+
+        // roulette wheel selection on the normalised probabilities values
+        double cumulativeProbability = 0.0;
+        
+        for (int i=0; i<probabilities.size(); i++) {
+            cumulativeProbability += probabilities[i];
+            if (selectionProbability <= cumulativeProbability) {
+                return i;
+            }
+        }
+    }
+
+    return 0;
+}
+
+// return the transpose of a mtrix
+std::vector<std::vector<double>> EvolutionaryUtils::transpose(std::vector<std::vector<double>> matrix) {
+    std::vector<std::vector<double>> t_amtrix(matrix[0].size(), std::vector<double>(matrix.size()));
+    // Transpose the matrix
+    for (size_t i = 0; i < matrix.size(); ++i) {
+        for (size_t j = 0; j < matrix[i].size(); ++j) {
+            t_amtrix[j][i] = matrix[i][j];
+        }
+    }
+
+    return t_amtrix;
+}
 
 // Actually run the simulation across teams and evolve them
 void Evolutionary::evolve(const std::string& filename) {
@@ -266,25 +333,78 @@ void Evolutionary::evolve(const std::string& filename) {
     
     // How many offsprings does the generation create?
     const int numberOfOffsprings = config["evolutionary"]["numberOfOffsprings"].as<int>();
+
+    // how many generations to do this for?
+    const int numberOfGenerations = config["evolutionary"]["numberOfGenerations"].as<int>();
     
-    std::cout<<"Hypervolume origin is: "<<lowerBound<<std::endl;
+    // std::cout<<"Hypervolume origin is: "<<lowerBound<<std::endl;
 
-    for (auto &ind : population) {
-        ind.evaluate(filename, envs);
+    for (int gen = 0; gen < numberOfGenerations; gen++) {
+        // TODO parallelise this
+        for (auto &ind : population) {
+            ind.evaluate(filename, envs);
+            for (auto f:ind.fitness) {
+                std::cout<<f<<",";
+            }
+            std::cout<<std::endl;
+        }
+        std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
+
+        // 1. Get at least 'numberOfOffsprings' solutions from the population into as many pareto fronts as needed
+        std::vector<Individual> workingPopulation = this->population; // temporary population variable to generate the pareto fronts
+
+        while (workingPopulation.size() > this->population.size() - numberOfOffsprings) {
+            paretoFronts.push_back(evoHelper.findParetoFront(workingPopulation));
+            workingPopulation = evoHelper.without(workingPopulation, paretoFronts.back()); // remove the newest pareto front from working population
+        }
+
+        // remove the non-pareto solutions from the population
+        this->population = evoHelper.without(this->population, workingPopulation);
+
+        // 2. Update agent-level difference impact/reward for each solution on the above pareto fronts
+        for (int i=0; i<paretoFronts.size(); i++) {
+            double paretoHypervolume = evoHelper.getHypervolume(paretoFronts[i], lowerBound);
+            for (int j=0; j<paretoFronts[i].size(); j++) {
+                paretoFronts[i][j].differenceEvaluate(filename, envs, paretoFronts[i], j, paretoHypervolume,lowerBound);
+            }
+        }
+        
+        // 3. Each individual on each pareto front now has an updated difference evaluation
+        // Assemble new joint policies from these individuals
+
+        // create a matrix of difference-evaluations (columns) vs individuals
+        std::vector<std::vector<double>> differenceImpactsMatrix;
+        for (int i=0; i<paretoFronts.size(); i++) {
+            for (int j=0; j<paretoFronts[i].size(); j++) {
+                differenceImpactsMatrix.push_back(paretoFronts[i][j].differenceEvaluations);
+            }
+        }
+
+        // TODO: make this work so that required number of new agents are added
+        for (int numNewTeams = 0; numNewTeams < numberOfOffsprings; numNewTeams++) {
+            std::vector<Agent> offSpringsAgents;
+            auto probabilitiesMatrix = evoHelper.transpose(differenceImpactsMatrix);
+            // now the probabilitiesMatrix is difference evaluations vs individuals
+            // i-loop: difference_evaluation no. (agent) j-loop: team_no.
+            for (int i=0; i<probabilitiesMatrix.size(); i++) {
+                int ith_agents_team = evoHelper.softmaxSelection(probabilitiesMatrix[i]); // get the index of which team was selected
+                // translate this index into the actual team on the pareto fronts
+                int indexCounter = 0;
+                for (int k=0; k<paretoFronts.size(); k++) {
+                    for (int l=0; l<paretoFronts[k].size(); l++) {
+                        if (indexCounter == ith_agents_team) { // team has been found
+                            offSpringsAgents.push_back(paretoFronts[k][l].getAgents()[i]); // add the ith team agent here
+                            goto indexFound; //break out of the inner 2 loops
+                        }
+                        indexCounter++;
+                    }
+                }
+            indexFound:
+                continue;
+            }
+
+            // 4. Create a team from these assembled joint policies and add it to the populatino
+            this->population.push_back(Individual(filename, teamIDCounter++, offSpringsAgents));
+        }
     }
-
-    std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
-
-    // 1. Get at least 'numberOfOffsprings' solutions from the population into as many pareto fronts as needed
-    std::vector<Individual> workingPopulation = this->population; // temporary population variable to generate the pareto fronts
-
-    while (workingPopulation.size() > this->population.size() - numberOfOffsprings) {
-        paretoFronts.push_back(evoHelper.findParetoFront(workingPopulation));
-         workingPopulation = evoHelper.without(workingPopulation, paretoFronts.back()); // remove the newest pareto front from working population
-    }
-
-    // 2. Update agent-level difference impact/reward for each solution on the above pareto fronts
-    paretoFronts[0][0].differenceEvaluate(filename, envs, paretoFronts[0], 0, evoHelper.getHypervolume(paretoFronts[0], lowerBound), lowerBound);
-    int vv;
-    
 }

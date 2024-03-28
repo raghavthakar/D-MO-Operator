@@ -24,10 +24,13 @@ public:
     std::vector<double> differenceEvaluations;
     // wrapper around a team to keep it in the population
     Individual(const std::string& filename, int id);
+    Individual(const std::string& filename, int id, std::vector<Agent> agents);
     // evaluate a team by simulating it and adding the rewards
     std::vector<int> evaluate(const std::string& filename, std::vector<Environment> environments);
     // difference-evaluate the team and update agent-level difference reward
     void differenceEvaluate(const std::string& filename, std::vector<Environment> environments, std::vector<Individual> paretoFront, int paretoIndex, double hypervolume, double lowerBound);
+    // return the agents of the team
+    std::vector<Agent> getAgents();
 };
 
 class Evolutionary {
@@ -52,6 +55,9 @@ public:
     bool dominates(Individual a, Individual b); // finds if the individual a dominates individual b
     std::vector<Individual> findParetoFront(const std::vector<Individual>& population); // finds and returns the pareto front in a population
     std::vector<Individual> without(const std::vector<Individual> workingPopulation, const std::vector<Individual> toRemoveSolutions);
+    std::vector<double> softmax(const std::vector<double>& values);
+    int softmaxSelection(std::vector<double> probabilities);
+    std::vector<std::vector<double>> transpose(std::vector<std::vector<double>> matrix);
 };
 
 

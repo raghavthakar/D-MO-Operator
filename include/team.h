@@ -46,6 +46,7 @@ public:
     std::vector<std::vector<std::pair<double, double>>> teamTrajectory;
     Team();
     Team(const std::string& filename, int id); // Constructor
+    Team(const std::string& filename, std::vector<Agent> agents, int id); // Constructor
     void printInfo();
     std::vector<std::vector<int>> simulate(const std::string& filename, Environment environment);
     std::vector<std::vector<int>> replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType);

@@ -220,6 +220,21 @@ Team::Team(const std::string& filename, int id) {
     this->teamTrajectory.clear(); // clears the teamTrajectory of the team
 }
 
+Team::Team(const std::string& filename, std::vector<Agent> agents, int id) {
+    YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
+
+    const YAML::Node& team_config = config["team"]; // Team config info
+    const YAML::Node& agent_config = config["agent"]; // Agent config info
+
+    bool randomStartPosition = agent_config["randomStartPosition"].as<bool>(); // Are the start pos random?
+
+    this->agents = agents;
+
+    this->id = id; // Store the team id
+
+    this->teamTrajectory.clear(); // clears the teamTrajectory of the team
+}
+
 void Team::printInfo() {
     std::cout<<"Team ID: "<<id<<std::endl;
     for (auto& agent : agents) {

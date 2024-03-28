@@ -22,7 +22,7 @@ environment:
       poi_y: 10
       observationRadius: 5.0
       coupling: 1
-      reward: 1
+      reward: 10
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
     
     - id: 1
@@ -31,7 +31,7 @@ environment:
       poi_y: 20
       observationRadius: 5.0
       coupling: 1
-      reward: 1
+      reward: 10
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
     
     - id: 2
@@ -40,7 +40,7 @@ environment:
       poi_y: 30
       observationRadius: 5.0
       coupling: 1
-      reward: 1
+      reward: 10
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
     
     - id: 3
@@ -49,7 +49,7 @@ environment:
       poi_y: 40
       observationRadius: 5.0
       coupling: 1
-      reward: 1
+      reward: 10
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
     
     - id: 4
@@ -59,7 +59,7 @@ environment:
       observationRadius: 5.0
       coupling: 1
       reward: 30
-      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
       observableWindow: [0, 25] # Timesteps at which POI appears and disappears respectively
     
     - id: 5
@@ -69,7 +69,7 @@ environment:
       observationRadius: 5.0
       coupling: 1
       reward: 30
-      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
       observableWindow: [25, 50] # Timesteps at which POI appears and disappears respectively
 
     - id: 6
@@ -79,7 +79,7 @@ environment:
       observationRadius: 5.0
       coupling: 1
       reward: 30
-      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
       observableWindow: [50, 75] # Timesteps at which POI appears and disappears respectively
 
     
@@ -90,7 +90,7 @@ environment:
       observationRadius: 5.0
       coupling: 1
       reward: 30
-      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
       observableWindow: [75, 100] # Timesteps at which POI appears and disappears respectively
 # --------------------------------------
 
@@ -99,7 +99,7 @@ episode:
 # --------------------------------------
 
 team:
-  numberOfAgents: 3
+  numberOfAgents: 10
 # --------------------------------------
 
 agent:
@@ -112,9 +112,9 @@ agent:
 # --------------------------------------
 
 evolutionary:
-  populationSize: 50 # Will decide the number of joint policies in the population
+  populationSize: 100 # Will decide the number of joint policies in the population
   numberOfEpisodes: 1 # How many environments an individiual in the generation will be tested on
-  numberOfGenerations: 50
-  numberOfOffsprings: 20 # How many offsprings does the population create in every generation?
+  numberOfGenerations: 100
+  numberOfOffsprings: 50 # How many offsprings does the population create in every generation?
   counterfactualType: "static" # Counterfactial agent simply stays in the start position throughout
 # --------------------------------------
