@@ -5,9 +5,19 @@
 #include <yaml-cpp/yaml.h>
 
 POI::POI(int id, int classId, double x, double y, double observationRadius, int coupling, 
-    int reward, std::pair<int, int> observableWindow)
+    int reward, std::pair<int, int> observableWindow, bool exactCouplingNeeded, bool rewardOnce)
     : id(id), classId(classId), x(x), y(y), observationRadius(observationRadius), coupling(coupling), 
-    reward(reward), observableWindow(observableWindow){}
+    reward(reward), observableWindow(observableWindow), exactCouplingNeeded(exactCouplingNeeded),
+    rewardOnce(rewardOnce) {
+        this->observed = false;
+    }
+
+bool POI::isObserved() {
+    return this->observed;
+}
+void POI::setAsObserved() {
+    this->observed = true;
+}
 
 void Environment::loadConfig(const std::string& filename) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
@@ -54,7 +64,9 @@ void Environment::loadConfig(const std::string& filename) {
                     config["environment"]["observationRadius"].as<double>(),
                     config["environment"]["coupling"].as<int>(),
                     config["environment"]["reward"].as<int>(),
-                    observableWindow); // Create POI object and add to vector
+                    observableWindow,
+                    config["environment"]["exactCouplingNeeded"].as<bool>(),
+                    config["environment"]["rewardOnce"].as<bool>()); // Create POI object and add to vector
             }
         }
     }
@@ -82,19 +94,22 @@ void Environment::loadConfig(const std::string& filename) {
 
             std::pair<int, int> observableWindow;
             if (poi["eternalPOI"].as<bool>() == true) {
-                    // set observable window to eternity
-                    observableWindow = std::make_pair(0, std::numeric_limits<int>::max());
-                }
-                else {
-                    observableWindow = std::make_pair(poi["observableWindow"][0].as<int>(), 
-                                                        poi["observableWindow"][1].as<int>());
-                }
+                // set observable window to eternity
+                observableWindow = std::make_pair(0, std::numeric_limits<int>::max());
+            }
+            else {
+                observableWindow = std::make_pair(poi["observableWindow"][0].as<int>(), 
+                                                    poi["observableWindow"][1].as<int>());
+            }
+
+
 
             pois.emplace_back(poi_id, class_id, poi_x, poi_y, 
                     poi["observationRadius"].as<double>(),
                     poi["coupling"].as<int>(),
                     poi["reward"].as<int>(),
-                    observableWindow); // Create POI object and add to vector
+                    observableWindow, poi["exactCouplingNeeded"].as<bool>(),
+                    poi["rewardOnce"].as<bool>()); // Create POI object and add to vector
         }
     }
     
@@ -117,7 +132,7 @@ std::vector<int> Environment::getRewards(std::vector<std::pair<double, double>> 
         rewardVector.push_back(0);
     
     // loop through each POI, and add its reward accordingly
-    for (const auto& poi : pois) {
+    for (auto& poi : pois) {
         int numberOfCloseAgents = 0;
 
         for (const auto agentPosition : agentPositions) {
@@ -132,16 +147,27 @@ std::vector<int> Environment::getRewards(std::vector<std::pair<double, double>> 
                 numberOfCloseAgents++;
         }
 
-        // increase the rewards if agent within POI's observation radius & 
-        // timestep within the POI's observableWindow
-        if (numberOfCloseAgents >= poi.coupling && stepNumber >= poi.observableWindow.first
-            && stepNumber <= poi.observableWindow.second) {
-            rewardVector[poi.classId] += poi.reward;
+        // get rewards from this POI if it is not observed, or if it is not rewardOnce POI
+        if (!poi.isObserved() || (!poi.rewardOnce)) {
+            // increase the rewards if agent within POI's observation radius & 
+            // timestep within the POI's observableWindow
+            if (poi.exactCouplingNeeded == true && numberOfCloseAgents == poi.coupling && 
+                stepNumber >= poi.observableWindow.first && stepNumber <= poi.observableWindow.second) {
+                rewardVector[poi.classId] += poi.reward;
+                // set this POI as observed
+                poi.setAsObserved();
+            }
+            else if (poi.exactCouplingNeeded == false && numberOfCloseAgents >= poi.coupling && 
+                stepNumber >= poi.observableWindow.first && stepNumber <= poi.observableWindow.second) {
+                rewardVector[poi.classId] += poi.reward;
+                // set this POI as observed
+                poi.setAsObserved();
+            }
         }
     }
 
     // Add in the penalties of each agent to each objective reward
-    for(int i = 0; i < rewardVector.size(); i++)
+    for (int i = 0; i < rewardVector.size(); i++)
         rewardVector[i] += agentPositions.size() * penalty;
 
     return rewardVector;

@@ -10,6 +10,7 @@
 #include <limits>
 #include <iostream>
 #include <algorithm>
+#include <execution>
 
 const int NONE = std::numeric_limits<int>::min();
 
@@ -340,7 +341,17 @@ void Evolutionary::evolve(const std::string& filename) {
     // std::cout<<"Hypervolume origin is: "<<lowerBound<<std::endl;
 
     for (int gen = 0; gen < numberOfGenerations; gen++) {
-        // TODO parallelise this
+        // parallelised this
+
+        std::cout<<"Generation: "<<gen<<std::endl;
+        /*std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
+            ind.evaluate(filename, envs);
+            for (auto f:ind.fitness) {
+                std::cout<<f<<",";
+            }
+            std::cout<<std::endl;
+        });*/
+
         for (auto &ind : population) {
             ind.evaluate(filename, envs);
             for (auto f:ind.fitness) {
@@ -348,6 +359,7 @@ void Evolutionary::evolve(const std::string& filename) {
             }
             std::cout<<std::endl;
         }
+
         std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
 
         // 1. Get at least 'numberOfOffsprings' solutions from the population into as many pareto fronts as needed
@@ -362,10 +374,11 @@ void Evolutionary::evolve(const std::string& filename) {
         this->population = evoHelper.without(this->population, workingPopulation);
 
         // 2. Update agent-level difference impact/reward for each solution on the above pareto fronts
-        for (int i=0; i<paretoFronts.size(); i++) {
+        #pragma omp parallel for
+        for (int i = 0; i < paretoFronts.size(); ++i) {
             double paretoHypervolume = evoHelper.getHypervolume(paretoFronts[i], lowerBound);
-            for (int j=0; j<paretoFronts[i].size(); j++) {
-                paretoFronts[i][j].differenceEvaluate(filename, envs, paretoFronts[i], j, paretoHypervolume,lowerBound);
+            for (int j = 0; j < paretoFronts[i].size(); ++j) {
+                paretoFronts[i][j].differenceEvaluate(filename, envs, paretoFronts[i], j, paretoHypervolume, lowerBound);
             }
         }
         
@@ -380,10 +393,10 @@ void Evolutionary::evolve(const std::string& filename) {
             }
         }
 
-        // TODO: make this work so that required number of new agents are added
+        auto probabilitiesMatrix = evoHelper.transpose(differenceImpactsMatrix);
+        // required number of new agents are added
         for (int numNewTeams = 0; numNewTeams < numberOfOffsprings; numNewTeams++) {
             std::vector<Agent> offSpringsAgents;
-            auto probabilitiesMatrix = evoHelper.transpose(differenceImpactsMatrix);
             // now the probabilitiesMatrix is difference evaluations vs individuals
             // i-loop: difference_evaluation no. (agent) j-loop: team_no.
             for (int i=0; i<probabilitiesMatrix.size(); i++) {

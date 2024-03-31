@@ -4,6 +4,7 @@ project(MOD)
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 set(CMAKE_PREFIX_PATH libtorch)
 find_package(Torch REQUIRED)
@@ -32,3 +33,4 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} yaml-cpp)
 target_link_libraries(${PROJECT_NAME} "${TORCH_LIBRARIES}")
 target_link_libraries(${PROJECT_NAME} Pagmo::pagmo)
+target_link_libraries(${PROJECT_NAME} tbb) # Add this line to link with TBB

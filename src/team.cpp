@@ -272,7 +272,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
     // Move as per policy for as many steps as in the episode length
     int episodeLength = config["episode"]["length"].as<int>();
     // Reward at each timestep in this episode
-    std::vector<std::vector<int>> rewardHistory; 
+    std::vector<std::vector<int>> rewardHistory;
     for(int stepNumber = 0; stepNumber < episodeLength; stepNumber++) {
         // Display the current stae of all agents
         // printInfo();
