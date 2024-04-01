@@ -209,7 +209,16 @@ Team::Team(const std::string& filename, int id) {
     bool randomStartPosition = agent_config["randomStartPosition"].as<bool>(); // Are the start pos random?
 
     for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
-        agents.emplace_back(0, 0, agent_config["maxStepSize"].as<int>(),
+        int posX, posY;
+        if (randomStartPosition == true) {
+            posX = rand() % config["environment"]["dimensions"]["xLength"].as<int>();
+            posY = rand() % config["environment"]["dimensions"]["yLength"].as<int>();
+        }
+        else {
+            posX = config["agent"]["startingX"].as<int>();
+            posY = config["agent"]["startingY"].as<int>();
+        }
+        agents.emplace_back(posX, posY, agent_config["maxStepSize"].as<int>(),
             agent_config["observationRadius"].as<double>(),
             agent_config["numberOfSensors"].as<int>(),
             config["environment"]["numberOfClassIds"].as<int>()); // Create agent object and store in vector
@@ -272,7 +281,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
     // Move as per policy for as many steps as in the episode length
     int episodeLength = config["episode"]["length"].as<int>();
     // Reward at each timestep in this episode
-    std::vector<std::vector<int>> rewardHistory;
+    std::vector<std::vector<int>> rewardHistory; 
     for(int stepNumber = 0; stepNumber < episodeLength; stepNumber++) {
         // Display the current stae of all agents
         // printInfo();

@@ -58,6 +58,7 @@ public:
     std::vector<double> softmax(const std::vector<double>& values);
     int softmaxSelection(std::vector<double> probabilities);
     std::vector<std::vector<double>> transpose(std::vector<std::vector<double>> matrix);
+    std::vector<double> getColumn(std::vector<std::vector<double>> matrix, int colNum);
 };
 
 
