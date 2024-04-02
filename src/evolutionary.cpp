@@ -11,6 +11,7 @@
 #include <iostream>
 #include <algorithm>
 #include <execution>
+#include <unordered_set>
 
 const int NONE = std::numeric_limits<int>::min();
 
@@ -275,6 +276,43 @@ std::vector<Individual> EvolutionaryUtils::without(const std::vector<Individual>
     return populationWithout;
 }
 
+std::vector<Individual> EvolutionaryUtils::cull(const std::vector<Individual> PF, const int desiredSize) {
+    std::vector<Individual> culledPF;
+    
+    // group individuals according to their fitnesses
+    std::vector<std::vector<Individual>> groupedIndividuals;
+    for (const auto& ind : PF) {
+        bool found = false;
+
+        // Iterate over existing groups
+        for (auto& group : groupedIndividuals) {
+            // Check if the fitness vectors match
+            if (group.front().fitness == ind.fitness) {
+                group.push_back(ind);
+                found = true;
+                break;
+            }
+        }
+        // If no matching group found, create a new group
+        if (!found) {
+            groupedIndividuals.push_back({ind});
+        }
+    }
+
+    // add unique fitness individuals to culledPF
+    while (true) {
+        for (auto &group : groupedIndividuals) {
+            if (group.size() > 0) {
+                culledPF.push_back(group.back());
+                group.pop_back();
+            }
+
+            if (culledPF.size() >= desiredSize)
+                return culledPF;
+        }
+    }
+}
+
 // Select an element from a row using softmax selection
 int EvolutionaryUtils::softmaxSelection(std::vector<double> probabilities) {
     std::random_device rd; // Obtain a random number from hardware
@@ -367,6 +405,9 @@ void Evolutionary::evolve(const std::string& filename) {
     
     // How many offsprings does the generation create?
     const int numberOfOffsprings = config["evolutionary"]["numberOfOffsprings"].as<int>();
+    
+    // How many parents are selected to make these offsprings
+    const int numberOfParents = config["evolutionary"]["numberOfParents"].as<int>();
 
     // how many generations to do this for?
     const int numberOfGenerations = config["evolutionary"]["numberOfGenerations"].as<int>();
@@ -376,14 +417,14 @@ void Evolutionary::evolve(const std::string& filename) {
     for (int gen = 0; gen < numberOfGenerations; gen++) {
         // parallelised this
 
-        // std::cout<<"Generation: "<<gen<<std::endl;
-        // std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
-        //     ind.evaluate(filename, envs);
-        //     for (auto f:ind.fitness) {
-        //         std::cout<<f<<",";
-        //     }
-        //     std::cout<<std::endl;
-        // });
+        std::cout<<"Generation: "<<gen<<std::endl;
+        std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
+            ind.evaluate(filename, envs);
+            for (auto f:ind.fitness) {
+                std::cout<<f<<",";
+            }
+            std::cout<<std::endl;
+        });
 
         for (auto &ind : population) {
             ind.evaluate(filename, envs);
@@ -392,23 +433,34 @@ void Evolutionary::evolve(const std::string& filename) {
             // }
             // std::cout<<std::endl;
         }
-        std::cout<<"Evaluation complete"<<std::endl;
+        // std::cout<<"Evaluation complete"<<std::endl;
 
         std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
 
         // 1. Get at least 'numberOfOffsprings' solutions from the population into as many pareto fronts as needed
         std::vector<Individual> workingPopulation = this->population; // temporary population variable to generate the pareto fronts
 
-        while (workingPopulation.size() > this->population.size() - numberOfOffsprings) {
-            paretoFronts.push_back(evoHelper.findParetoFront(workingPopulation));
-            workingPopulation = evoHelper.without(workingPopulation, paretoFronts.back()); // remove the newest pareto front from working population
+        while (workingPopulation.size() > this->population.size() - numberOfParents) {
+            std::vector<Individual> innerPF = evoHelper.findParetoFront(workingPopulation);
+            
+            int numParetoInds = 0;
+            for (auto pf : paretoFronts) {
+                numParetoInds += pf.size();
+            }
+
+            if (numParetoInds + innerPF.size() > numberOfParents) {
+                // cull the inner PF to only as many individuals as possible to maintain population size
+                innerPF = evoHelper.cull(innerPF, numberOfParents - numParetoInds);
+            }
+            paretoFronts.push_back(innerPF);
+            workingPopulation = evoHelper.without(workingPopulation, innerPF); // remove the newest pareto front from working population
         }
-        std::cout<<"working population set"<<std::endl;
+        // std::cout<<"working population set"<<std::endl;
 
         // remove the non-pareto solutions from the population
         this->population = evoHelper.without(this->population, workingPopulation);
         
-        std::cout<<"this population set"<<std::endl;
+        std::cout<<"this population set: "<<this->population.size()<<std::endl;
 
         // 2. Update agent-level difference impact/reward for each solution on the above pareto fronts
         // #pragma omp parallel for
@@ -422,7 +474,7 @@ void Evolutionary::evolve(const std::string& filename) {
                 }
             }
         }
-        std::cout<<"difference evaluations complete"<<std::endl;
+        // std::cout<<"difference evaluations complete"<<std::endl;
 
         // 3. Each individual on each pareto front now has an updated difference evaluation
         // Assemble new joint policies from these individuals
@@ -438,19 +490,19 @@ void Evolutionary::evolve(const std::string& filename) {
                 }
             }
         }
-        std::cout<<"difference impact matrix formed"<<std::endl;
+        // std::cout<<"difference impact matrix formed"<<std::endl;
 
         for (auto qwe: differenceImpactsMatrix) {
-            for (auto qw : qwe) {
-                std::cout<<qw<<" ";
-            }
-            std::cout<<std::endl;
+            // for (auto qw : qwe) {
+            //     std::cout<<qw<<" ";
+            // }
+            // std::cout<<std::endl;
             if (qwe.size() != 10) {
                 std::cout<<"The row is not size-10 in difference impacts matrix, so fuck you"<<std::endl;
                 exit(1);
             }
         }
-        std::cout<<"difference impact matrix printed"<<std::endl;
+        // std::cout<<"difference impact matrix printed"<<std::endl;
         
         // required number of new agents are added
         for (int newIndividualNum = 0; newIndividualNum < numberOfOffsprings; newIndividualNum++) {
@@ -459,14 +511,14 @@ void Evolutionary::evolve(const std::string& filename) {
             for (int agentIndex=0; agentIndex<differenceImpactsMatrix[0].size(); agentIndex++) {
                 std::vector<double> selectionProbabilities = evoHelper.getColumn(differenceImpactsMatrix, agentIndex);
                 int selectedIndIndex = evoHelper.softmaxSelection(selectionProbabilities); // get an index of the selected individual for thatagent's policy
-                std::cout<<"Selected index is: "<<selectedIndIndex<<std::endl;
+                // std::cout<<"Selected index is: "<<selectedIndIndex<<std::endl;
                 // find this individual on the pareto front
                 int indexCounter = 0;
                 for (int i=0; i<paretoFronts.size(); i++) {
                     for (int ii=0; ii<paretoFronts[i].size(); ii++) {
                         if (indexCounter == selectedIndIndex) {
                             offSpringsAgents.push_back(paretoFronts[i][ii].getAgents()[agentIndex]); // add this agent to the offspring agents
-                            std::cout<<"Added agent "<<agentIndex<<"'s policy from individual "<<selectedIndIndex<<std::endl;
+                            // std::cout<<"Added agent "<<agentIndex<<"'s policy from individual "<<selectedIndIndex<<std::endl;
                         }
                         indexCounter++;
                     }
@@ -481,6 +533,6 @@ void Evolutionary::evolve(const std::string& filename) {
             // 4. Create a team from these assembled joint policies and add it to the populatino
             this->population.push_back(Individual(filename, teamIDCounter++, offSpringsAgents));
         }
-        std::cout<<"new individuals added to population"<<std::endl;
+        // std::cout<<"new individuals added to population"<<std::endl;
     }
 }

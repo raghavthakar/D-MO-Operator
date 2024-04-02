@@ -136,5 +136,6 @@ evolutionary:
   numberOfEpisodes: 1 # How many environments an individiual in the generation will be tested on
   numberOfGenerations: 1000
   numberOfOffsprings: 50 # How many offsprings does the population create in every generation?
+  numberOfParents: 50 # How many individuals are used to make these offsprings?
   counterfactualType: "static" # Counterfactial agent simply stays in the start position throughout
 # --------------------------------------
