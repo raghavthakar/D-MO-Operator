@@ -11,6 +11,8 @@ public:
     std::pair<double, double> forward(const std::vector<double>& input);
     void display();
 
+    void addNoise(double mean, double stddev);
+
 private:
     torch::nn::Linear fc1{nullptr}, fc2{nullptr}, fc3{nullptr};
     void displayWeights(const torch::Tensor& weight);

@@ -113,6 +113,11 @@ void Individual::differenceEvaluate(const std::string& filename, std::vector<Env
     // std::cout<<team.agents.size()<<std::endl;
 }
 
+// mutate the agents' policies with some noise
+void Individual::mutate() {
+    this->team.mutate();
+}
+
 // Return the team's agents
 std::vector<Agent> Individual::getAgents() {
     return this->team.agents;
@@ -419,6 +424,7 @@ void Evolutionary::evolve(const std::string& filename) {
 
         std::cout<<"Generation: "<<gen<<std::endl;
         std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
+            ind.mutate();
             ind.evaluate(filename, envs);
             for (auto f:ind.fitness) {
                 std::cout<<f<<",";

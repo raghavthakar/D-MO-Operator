@@ -115,7 +115,7 @@ environment:
 # --------------------------------------
 
 episode:
-  length: 100
+  length: 75
 # --------------------------------------
 
 team:
@@ -129,13 +129,15 @@ agent:
   maxStepSize: 4
   observationRadius: 5
   numberOfSensors: 4
+  noiseMean: 0.0
+  noiseStdDev: 0.0
 # --------------------------------------
 
 evolutionary:
-  populationSize: 100 # Will decide the number of joint policies in the population
+  populationSize: 300 # Will decide the number of joint policies in the population
   numberOfEpisodes: 1 # How many environments an individiual in the generation will be tested on
   numberOfGenerations: 1000
-  numberOfOffsprings: 50 # How many offsprings does the population create in every generation?
-  numberOfParents: 50 # How many individuals are used to make these offsprings?
+  numberOfOffsprings: 150 # How many offsprings does the population create in every generation?
+  numberOfParents: 150 # How many individuals are used to make these offsprings?
   counterfactualType: "static" # Counterfactial agent simply stays in the start position throughout
 # --------------------------------------

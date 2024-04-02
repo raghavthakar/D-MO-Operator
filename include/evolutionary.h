@@ -31,6 +31,8 @@ public:
     void differenceEvaluate(const std::string& filename, std::vector<Environment> environments, std::vector<Individual> paretoFront, int paretoIndex, double hypervolume, double lowerBound);
     // return the agents of the team
     std::vector<Agent> getAgents();
+    // mutate the agents' policies with some noise
+    void mutate();
 };
 
 class Evolutionary {

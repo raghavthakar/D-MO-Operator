@@ -24,9 +24,10 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 
 // Constructor
 Agent::Agent(double x, double y, double _maxStepSize, double _observationRadius, 
-    int _numberOfSensors, int numberOfClassIds) : posX(x), posY(y), maxStepSize(_maxStepSize), 
-    observationRadius(_observationRadius), numberOfSensors(_numberOfSensors),
-    policy(2 + _numberOfSensors * (numberOfClassIds + 1), -2, 2)  {}
+    int _numberOfSensors, int numberOfClassIds, double noiseMean, double noiseStdDev) : 
+    posX(x), posY(y), maxStepSize(_maxStepSize), 
+    observationRadius(_observationRadius), numberOfSensors(_numberOfSensors), noiseMean(noiseMean),
+    noiseStdDev(noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds + 1), -5, 5)  {}
 
 // Function to move the agent by dx, dy (within maximum step size)
 void Agent::move(std::pair<double, double> delta, Environment environment) {
@@ -79,6 +80,11 @@ void Agent::move(std::pair<double, double> delta, Environment environment) {
 void Agent::set(int startingX, int startingY) {
     posX = startingX;
     posY = startingY;
+}
+
+// Adds noise to the contained policy
+void Agent::addNoiseToPolicy() {
+    this->policy.addNoise(this->noiseMean, this->noiseStdDev);
 }
 
 // Observe and create state vector
@@ -221,7 +227,9 @@ Team::Team(const std::string& filename, int id) {
         agents.emplace_back(posX, posY, agent_config["maxStepSize"].as<int>(),
             agent_config["observationRadius"].as<double>(),
             agent_config["numberOfSensors"].as<int>(),
-            config["environment"]["numberOfClassIds"].as<int>()); // Create agent object and store in vector
+            config["environment"]["numberOfClassIds"].as<int>(),
+            agent_config["noiseMean"].as<double>(),
+            agent_config["noiseStdDev"].as<double>()); // Create agent object and store in vector
     }
 
     this->id = id; // Store the team id
@@ -251,6 +259,13 @@ void Team::printInfo() {
         <<","<<agent.getPosition().second<<std::endl;
     }
     std::cout<<"======="<<std::endl;
+}
+
+// mutate the policies of the contrained agents
+void Team::mutate() {
+    for (auto &agent : this->agents) {
+        agent.addNoiseToPolicy();
+    }
 }
 
 // simualate the team in the provided environment. Returns a vecotr of rewards from each timestep

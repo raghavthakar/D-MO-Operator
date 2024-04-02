@@ -52,3 +52,25 @@ void Policy::displayWeights(const torch::Tensor& weight) {
         std::cout << std::endl;
     }
 }
+
+// Function to add the prescrived noise to the policy weights
+void Policy::addNoise(double mean, double stddev) {
+    // Add noise to the weights of each linear layer
+        torch::NoGradGuard no_grad; // Disable gradient tracking
+
+        // Add noise to the weights of the first linear layer (fc1)
+        if (fc1) {
+            auto weights1 = fc1->weight.data();
+            weights1.add_(torch::randn_like(weights1) * stddev + mean);
+        }
+
+        if (fc2) {
+            auto weights2 = fc2->weight.data();
+            weights2.add_(torch::randn_like(weights2) * stddev + mean);
+        }
+
+        if (fc1) {
+            auto weights3 = fc3->weight.data();
+            weights3.add_(torch::randn_like(weights3) * stddev + mean);
+        }
+}

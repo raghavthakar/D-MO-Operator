@@ -15,13 +15,15 @@ private:
     double maxStepSize; // Maximum step size the agent can take
     double observationRadius; // How far can the agent see around it?
     int numberOfSensors; // How many sensors are around the agent
+    double noiseMean; // POlicy noise mutate's mean
+    double noiseStdDev; // Policy noise mutate's stddev
 
 public:
     // Policy object that stores the agent's neural network
     Policy policy;
 
     // Constructor
-    Agent(double x, double y, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds);
+    Agent(double x, double y, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds, double noiseMean, double noiseStdDev);
 
     // Function to move the agent by dx, dy (within maximum step size)
     void move(std::pair<double, double> delta, Environment environment);
@@ -37,6 +39,9 @@ public:
 
     // Function to get the maxStepSize of the agent
     int getMaxStepSize() const;
+
+    // Add noise to the contained policy
+    void addNoiseToPolicy();
 };
 
 class Team {
@@ -50,6 +55,7 @@ public:
     void printInfo();
     std::vector<std::vector<int>> simulate(const std::string& filename, Environment environment);
     std::vector<std::vector<int>> replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType);
+    void mutate();
 };
 
 #endif // TEAM_H
