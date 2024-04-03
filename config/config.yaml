@@ -129,8 +129,10 @@ agent:
   maxStepSize: 4
   observationRadius: 5
   numberOfSensors: 4
+  nnWeightMin: -5
+  nnWeightMax: 5
   noiseMean: 0.0
-  noiseStdDev: 0.0
+  noiseStdDev: 0.01
 # --------------------------------------
 
 evolutionary:

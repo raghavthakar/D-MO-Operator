@@ -15,6 +15,8 @@ private:
     double maxStepSize; // Maximum step size the agent can take
     double observationRadius; // How far can the agent see around it?
     int numberOfSensors; // How many sensors are around the agent
+    double nnWeightMin; // Max and min weights of the policy weights
+    double nnWeightMax;
     double noiseMean; // POlicy noise mutate's mean
     double noiseStdDev; // Policy noise mutate's stddev
 
@@ -23,7 +25,7 @@ public:
     Policy policy;
 
     // Constructor
-    Agent(double x, double y, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds, double noiseMean, double noiseStdDev);
+    Agent(double x, double y, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds, double nnWeightMin, double nnWeightMax, double noiseMean, double noiseStdDev);
 
     // Function to move the agent by dx, dy (within maximum step size)
     void move(std::pair<double, double> delta, Environment environment);

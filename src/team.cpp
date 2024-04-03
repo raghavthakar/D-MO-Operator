@@ -24,10 +24,10 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 
 // Constructor
 Agent::Agent(double x, double y, double _maxStepSize, double _observationRadius, 
-    int _numberOfSensors, int numberOfClassIds, double noiseMean, double noiseStdDev) : 
+    int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double noiseMean, double noiseStdDev) : 
     posX(x), posY(y), maxStepSize(_maxStepSize), 
     observationRadius(_observationRadius), numberOfSensors(_numberOfSensors), noiseMean(noiseMean),
-    noiseStdDev(noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds + 1), -5, 5)  {}
+    noiseStdDev(noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds + 1), _nnWeightMin, _nnWeightMax)  {}
 
 // Function to move the agent by dx, dy (within maximum step size)
 void Agent::move(std::pair<double, double> delta, Environment environment) {
@@ -228,6 +228,8 @@ Team::Team(const std::string& filename, int id) {
             agent_config["observationRadius"].as<double>(),
             agent_config["numberOfSensors"].as<int>(),
             config["environment"]["numberOfClassIds"].as<int>(),
+            agent_config["nnWeightMin"].as<double>(),
+            agent_config["nnWeightMax"].as<double>(),
             agent_config["noiseMean"].as<double>(),
             agent_config["noiseStdDev"].as<double>()); // Create agent object and store in vector
     }
