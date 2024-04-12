@@ -1,5 +1,6 @@
 #include "policy.h"
 #include "torch/torch.h"
+#include <iostream>
 
 Policy::Policy() {}
 
@@ -16,6 +17,23 @@ Policy::Policy(int inputSize, double weightLowerLimit, double weightUpperLimit) 
     torch::nn::init::uniform_(fc3->weight, weightLowerLimit, weightUpperLimit);
 }
 
+// copy construct (deep copy)
+Policy::Policy(const Policy& other) {
+    // Define the layers of the neural network
+    fc1 = register_module("fc1", torch::nn::Linear(other.fc1->weight.size(1), other.fc1->weight.size(0)));
+    fc2 = register_module("fc2", torch::nn::Linear(other.fc2->weight.size(1), other.fc2->weight.size(0)));
+    fc3 = register_module("fc3", torch::nn::Linear(other.fc3->weight.size(1), other.fc3->weight.size(0)));
+
+    // Copy the weights from the original policy to the new one
+    torch::NoGradGuard no_grad; // Disable gradient computation temporarily
+    fc1->weight.copy_(other.fc1->weight);
+    fc1->bias.copy_(other.fc1->bias);
+    fc2->weight.copy_(other.fc2->weight);
+    fc2->bias.copy_(other.fc2->bias);
+    fc3->weight.copy_(other.fc3->weight);
+    fc3->bias.copy_(other.fc3->bias);
+}
+
 std::pair<double, double> Policy::forward(const std::vector<double>& input) {
     // Convert input vector to a torch::Tensor
     torch::Tensor x = torch::tensor(input).view({1, -1});
@@ -23,7 +41,7 @@ std::pair<double, double> Policy::forward(const std::vector<double>& input) {
     // Apply the layers sequentially with ReLU activation
     x = torch::relu(fc1->forward(x));
     x = torch::relu(fc2->forward(x));
-    x = fc3->forward(x);
+    x = torch::tanh(fc3->forward(x));
 
     // Extract output values from tensor and return as pair
     auto output_tensor = x.squeeze();
@@ -34,12 +52,19 @@ std::pair<double, double> Policy::forward(const std::vector<double>& input) {
 
 // Display method to print out the weights of each layer
 void Policy::display() {
-    std::cout << "Weights of fc1:" << std::endl;
-    displayWeights(fc1->weight);
-    std::cout << "Weights of fc2:" << std::endl;
-    displayWeights(fc2->weight);
-    std::cout << "Weights of fc3:" << std::endl;
-    displayWeights(fc3->weight);
+    std::cout << "Weights of fc1:\n" << getWeightsAsString(fc1->weight) << std::endl;
+    std::cout << "Weights of fc2:\n" << getWeightsAsString(fc2->weight) << std::endl;
+    std::cout << "Weights of fc3:\n" << getWeightsAsString(fc3->weight) << std::endl;
+}
+
+// Display method to print out the weights of each layer
+std::string Policy::getPolicyAsString() {
+    std::stringstream output;
+    output << "Weights of fc1:\n" << getWeightsAsString(fc1->weight) << std::endl;
+    output << "Weights of fc2:\n" << getWeightsAsString(fc2->weight) << std::endl;
+    output << "Weights of fc3:\n" << getWeightsAsString(fc3->weight) << std::endl;
+
+    return output.str();
 }
 
 // Function to display the weights of a tensor
@@ -51,6 +76,19 @@ void Policy::displayWeights(const torch::Tensor& weight) {
         }
         std::cout << std::endl;
     }
+}
+
+// Function to return the weights of a tensor as a string
+std::string Policy::getWeightsAsString(const torch::Tensor& weight) {
+    std::stringstream output;
+    auto weight_accessor = weight.accessor<float, 2>();
+    for (int i = 0; i < weight_accessor.size(0); ++i) {
+        for (int j = 0; j < weight_accessor.size(1); ++j) {
+            output << weight_accessor[i][j] << " ";
+        }
+        output << "\n"; // Add newline after each row
+    }
+    return output.str();
 }
 
 // Function to add the prescrived noise to the policy weights

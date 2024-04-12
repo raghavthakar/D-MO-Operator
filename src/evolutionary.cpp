@@ -14,6 +14,7 @@
 #include <execution>
 #include <unordered_set>
 #include <thread>
+#include <fstream>
 
 const int NONE = std::numeric_limits<int>::min();
 
@@ -44,6 +45,8 @@ std::vector<int> Individual::evaluate(const std::string& filename, std::vector<E
     std::vector<int> combinedCumulativeRewards; // Sum of the cumulative rewards
     
     for (Environment env : environments) {
+        env.reset();
+        env.loadConfig(filename);
         stepwiseEpisodeReward = team.simulate(filename, env);
         cumulativeEpisodeReward = std::vector<int>(stepwiseEpisodeReward[0].size(), 0);
 
@@ -64,7 +67,7 @@ std::vector<int> Individual::evaluate(const std::string& filename, std::vector<E
     }
 
     // set the fitness of the individual
-    fitness = combinedCumulativeRewards;
+    this->fitness = combinedCumulativeRewards;
     return combinedCumulativeRewards;
 }
 
@@ -77,15 +80,15 @@ void Individual::differenceEvaluate(const std::string& filename, std::vector<Env
     EvolutionaryUtils evoHelper;
     
     // 1. get and sum the replay rewards for each environment in environments
-    std::vector<std::vector<int>> agentWiseCumulativeReplayRewards;
+    std::vector<std::vector<int>> cumulativeReplayRewards;
     for (auto environ : environments) {
-        if (agentWiseCumulativeReplayRewards.size() == 0) {
-            agentWiseCumulativeReplayRewards = team.replayWithCounterfactual(filename, environ, counterfactualType);
+        if (cumulativeReplayRewards.size() == 0) {
+            cumulativeReplayRewards = team.replayWithCounterfactual(filename, environ, counterfactualType);
         } else {
             std::vector<std::vector<int>> replayRewards = team.replayWithCounterfactual(filename, environ, counterfactualType);
-            for (int counterfactualNumber = 0; counterfactualNumber < agentWiseCumulativeReplayRewards.size(); counterfactualNumber++) { // for all agents in the team
-                for (int rewNumber = 0; rewNumber < agentWiseCumulativeReplayRewards[counterfactualNumber].size(); rewNumber++) { // add up the counterfactual rewards
-                    agentWiseCumulativeReplayRewards[counterfactualNumber][rewNumber] += replayRewards[counterfactualNumber][rewNumber];
+            for (int i = 0; i < cumulativeReplayRewards.size(); i++) { // for all agents in the team
+                for (int rewNumber = 0; rewNumber < cumulativeReplayRewards[i].size(); rewNumber++) { // add up the counterfactual rewards
+                    cumulativeReplayRewards[i][rewNumber] += replayRewards[i][rewNumber];
                 }
             }
         }
@@ -106,7 +109,7 @@ void Individual::differenceEvaluate(const std::string& filename, std::vector<Env
     // }
 
     for (int i=0; i<this->team.agents.size(); i++) { // add each counterfactual fitness to the working pareto front
-        paretoFitnesses.push_back(agentWiseCumulativeReplayRewards[i]);
+        paretoFitnesses.push_back(cumulativeReplayRewards[i]);
         double counterfactualHypervolume = evoHelper.getHypervolume(paretoFitnesses, lowerBound); // get the hypervolume with this counterfactual fitness inserted
         double differenceImpact = hypervolume - counterfactualHypervolume; // find the difference with actual pareto hypervolume
         this->differenceEvaluations.push_back (differenceImpact); // assign the difference impact to the agent
@@ -123,6 +126,21 @@ void Individual::mutate() {
 // Return the team's agents
 std::vector<Agent> Individual::getAgents() {
     return this->team.agents;
+}
+
+// return the individual's team trajectory
+std::string Individual::getTeamTrajectoryAsString() {
+    std::stringstream output;
+    
+    // return the trajectory transpose (so each row is one agent's trajectory now)
+    for (int i=0; i<this->team.teamTrajectory[0].size(); i++) {
+        for (int j=0; j < team.teamTrajectory.size(); j++) {
+            output << team.teamTrajectory[j][i].first << "," << team.teamTrajectory[j][i].second << " ";
+        }
+        output << std::endl;
+    }
+
+    return output.str();
 }
 
 Evolutionary::Evolutionary(const std::string& filename) {
@@ -172,7 +190,7 @@ std::vector<Environment> Evolutionary::generateTestEnvironments
 
 
 // Actually run the simulation across teams and evolve them
-void Evolutionary::evolve(const std::string& filename) {
+void Evolutionary::evolve(const std::string& filename, const std::string& data_fileneme) {
     std::vector<Environment> envs = generateTestEnvironments(filename);
 
     EvolutionaryUtils evoHelper;
@@ -192,30 +210,43 @@ void Evolutionary::evolve(const std::string& filename) {
 
     // how many generations to do this for?
     const int numberOfGenerations = config["evolutionary"]["numberOfGenerations"].as<int>();
+
+    // log info about the algo every how many gens?
+    const int genLogInterval = config["experiment"]["genLogInterval"].as<int>();
     
     // std::cout<<"Hypervolume origin is: "<<lowerBound<<std::endl;
 
     for (int gen = 0; gen < numberOfGenerations; gen++) {
         // parallelised this
 
-        std::cout<<"Generation: "<<gen<<std::endl;
-        std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
-            ind.mutate();
-            ind.evaluate(filename, envs);
-            for (auto f:ind.fitness) {
-                std::cout<<f<<",";
-            }
-            std::cout<<std::endl;
-        });
-
-        // for (auto &ind : population) {
+        // std::cout<<"Generation: "<<gen<<std::endl;
+        // std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
         //     ind.evaluate(filename, envs);
             // for (auto f:ind.fitness) {
             //     std::cout<<f<<",";
             // }
             // std::cout<<std::endl;
-        // }
-        std::cout<<"Evaluation complete"<<std::endl;
+        // });
+
+        for (auto &ind : population) {
+        //     ind.mutate();
+            auto fpre = ind.fitness;
+            ind.evaluate(filename, envs);
+            auto fpost = ind.fitness;
+
+            if (fpre[0] != fpost[0] || fpre[1] != fpost[1]) {
+                std::cout<<"Individual: "<<ind.id<<std::endl;
+                for (auto f:fpre) {
+                    std::cout<<f<<",";
+                }
+                std::cout<<std::endl;
+                for (auto f:fpost) {
+                    std::cout<<f<<",";
+                }
+                std::cout<<std::endl;
+            }
+        }
+        // std::cout<<"Evaluation complete"<<std::endl;
 
         std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
 
@@ -232,7 +263,7 @@ void Evolutionary::evolve(const std::string& filename) {
 
             if (numParetoInds + innerPF.size() > numberOfParents) {
                 // cull the inner PF to only as many individuals as possible to maintain population size
-                innerPF = evoHelper.cull(innerPF, numberOfParents - numParetoInds);
+                innerPF = evoHelper.cull(innerPF, numberOfParents - numParetoInds); // cull by numberofparents - numparetoinds
             }
             paretoFronts.push_back(innerPF);
             workingPopulation = evoHelper.without(workingPopulation, innerPF); // remove the newest pareto front from working population
@@ -242,7 +273,7 @@ void Evolutionary::evolve(const std::string& filename) {
         // remove the non-pareto solutions from the population
         this->population = evoHelper.without(this->population, workingPopulation);
         
-        std::cout<<"this population set: "<<this->population.size()<<std::endl;
+        // std::cout<<"this population set: "<<this->population.size()<<std::endl;
 
         // 2. Update agent-level difference impact/reward for each solution on the above pareto fronts
         // #pragma omp parallel for
@@ -250,13 +281,9 @@ void Evolutionary::evolve(const std::string& filename) {
             double paretoHypervolume = evoHelper.getHypervolume(paretoFronts[i], lowerBound);
             for (int j = 0; j < paretoFronts[i].size(); ++j) {
                 paretoFronts[i][j].differenceEvaluate(filename, envs, paretoFronts[i], j, paretoHypervolume, lowerBound);
-                if (paretoFronts[i][j].differenceEvaluations.size() != 10) {
-                    std::cout<<i<<","<<j<<" diff eval not 10, so fuck you";
-                    exit(1);
-                }
             }
         }
-        std::cout<<"difference evaluations complete"<<std::endl;
+        // std::cout<<"difference evaluations complete"<<std::endl;
 
         // 3. Each individual on each pareto front now has an updated difference evaluation
         // Assemble new joint policies from these individuals
@@ -266,25 +293,9 @@ void Evolutionary::evolve(const std::string& filename) {
         for (int i=0; i<paretoFronts.size(); i++) {
             for (int j=0; j<paretoFronts[i].size(); j++) {
                 differenceImpactsMatrix.push_back(paretoFronts[i][j].differenceEvaluations);
-                if (paretoFronts[i][j].differenceEvaluations.size() != 10) {
-                    std::cout<<i<<","<<j<<" while adding to matrix, diff eval not 10, so fuck you";
-                    exit(1);
-                }
             }
         }
         // std::cout<<"difference impact matrix formed"<<std::endl;
-
-        for (auto qwe: differenceImpactsMatrix) {
-            // for (auto qw : qwe) {
-            //     std::cout<<qw<<" ";
-            // }
-            // std::cout<<std::endl;
-            if (qwe.size() != 10) {
-                std::cout<<"The row is not size-10 in difference impacts matrix, so fuck you"<<std::endl;
-                exit(1);
-            }
-        }
-        // std::cout<<"difference impact matrix printed"<<std::endl;
         
         // required number of new agents are added
         for (int newIndividualNum = 0; newIndividualNum < numberOfOffsprings; newIndividualNum++) {
@@ -299,22 +310,46 @@ void Evolutionary::evolve(const std::string& filename) {
                 for (int i=0; i<paretoFronts.size(); i++) {
                     for (int ii=0; ii<paretoFronts[i].size(); ii++) {
                         if (indexCounter == selectedIndIndex) {
-                            offSpringsAgents.push_back(paretoFronts[i][ii].getAgents()[agentIndex]); // add this agent to the offspring agents
-                            // std::cout<<"Added agent "<<agentIndex<<"'s policy from individual "<<selectedIndIndex<<std::endl;
+                            auto selectedAgent = paretoFronts[i][ii].getAgents()[agentIndex];
+                            offSpringsAgents.push_back(selectedAgent); // add this agent to the offspring agents
                         }
                         indexCounter++;
                     }
                 }
             }
-
-            if (offSpringsAgents.size() != 10) {
-                std::cout<<"Fuck you\n"<<"Size is "<<offSpringsAgents.size()<<"Instead of 10";
-                exit(1);
-            }
             
+            // TODO: MUTATION IS AFFECTING PARENT INDIVIDUAL'S AGENTS!!!!! NOT GOOD!!!!
             // 4. Create a team from these assembled joint policies and add it to the populatino
-            this->population.push_back(Individual(filename, teamIDCounter++, offSpringsAgents));
+            Individual offspring = Individual(filename, this->teamIDCounter++, offSpringsAgents);
+            offspring.mutate();
+            this->population.push_back(offspring);
         }
-        std::cout<<"new individuals added to population"<<std::endl;
+        
+        std::fstream dataFile;
+        dataFile.open(data_fileneme, std::ios::app);
+        
+        dataFile << "Generation: " << gen << std::endl;
+        for (auto pf : paretoFronts) {
+            for (auto ind : pf) {
+                dataFile << "Individual " <<ind.id <<" fitness: ";
+                for (auto f : ind.fitness) {
+                    dataFile << f <<",";
+                }
+                dataFile << std::endl;
+
+                dataFile << "Individual " << ind.id << " difference impacts: ";
+                for (double diffImpact : ind.differenceEvaluations) {
+                    dataFile << diffImpact << ",";
+                }
+                dataFile << std::endl;
+
+                if (gen % genLogInterval == 0) {
+                    dataFile << "Individual's " << ind.id << " team trajectory: "<<std::endl;
+                    dataFile << ind.getTeamTrajectoryAsString();
+                }
+            }
+        }
+        dataFile << std::endl;
     }
 }
+

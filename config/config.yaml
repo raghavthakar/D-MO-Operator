@@ -1,6 +1,6 @@
 environment:
   differentEnvs: false # New env config every episode or not?
-  numberOfPOIs: 8
+  numberOfPOIs: 12
   numberOfClassIds: 2
   dimensions:
     xLength: 100
@@ -10,112 +10,156 @@ environment:
   randomPOIConfig: false # If POIs should be generated randomly
 
   # This block of configs is irrelevant if randomPOIConfig is false
-  coupling: 1
+  coupling: 2
   reward: 30
-  observationRadius: 5.0
+  observationRadius: 10.0
   eternalPOIs: true
   observableWindow: [0, 25] # Timesteps at which POI appears and disappears respectively
   rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
-  exactCouplingNeeded: true # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+  exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
 
   POIs:
     - id: 0
-      classID: 0
-      poi_x: 30
-      poi_y: 30
-      observationRadius: 5.0
-      coupling: 1
-      reward: 30
-      eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      classID: 1
+      poi_x: 10
+      poi_y: 10
+      observationRadius: 10.0
+      coupling: 2
+      reward: 10
+      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      observableWindow: [0, 25] # Timesteps at which POI appears and disappears respectively
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 1
-      classID: 0
-      poi_x: 30
-      poi_y: 70
-      observationRadius: 5.0
-      coupling: 1
-      reward: 30
-      eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      classID: 1
+      poi_x: 10
+      poi_y: 90
+      observationRadius: 10.0
+      coupling: 2
+      reward: 10
+      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      observableWindow: [25, 50] # Timesteps at which POI appears and disappears respectively
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 2
-      classID: 0
-      poi_x: 70
-      poi_y: 30
-      observationRadius: 5.0
-      coupling: 1
-      reward: 30
-      eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      classID: 1
+      poi_x: 90
+      poi_y: 90
+      observationRadius: 10.0
+      coupling: 2
+      reward: 10
+      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      observableWindow: [50, 75] # Timesteps at which POI appears and disappears respectively
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 3
+      classID: 1
+      poi_x: 90
+      poi_y: 10
+      observationRadius: 10.0
+      coupling: 2
+      reward: 10
+      eternalPOI: false # If POI should stay in place forever, or only be active for a window
+      observableWindow: [75, 100] # Timesteps at which POI appears and disappears respectively
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+    - id: 4
+      classID: 0
+      poi_x: 30
+      poi_y: 30
+      observationRadius: 10.0
+      coupling: 2
+      reward: 30
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+    - id: 5
+      classID: 0
+      poi_x: 30
+      poi_y: 70
+      observationRadius: 10.0
+      coupling: 2
+      reward: 30
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+    - id: 6
+      classID: 0
+      poi_x: 70
+      poi_y: 30
+      observationRadius: 10.0
+      coupling: 2
+      reward: 30
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+    - id: 7
       classID: 0
       poi_x: 70
       poi_y: 70
-      observationRadius: 5.0
-      coupling: 1
+      observationRadius: 10.0
+      coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+    - id: 8
+      classID: 0
+      poi_x: 50
+      poi_y: 70
+      observationRadius: 10.0
+      coupling: 2
+      reward: 30
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+    - id: 9
+      classID: 0
+      poi_x: 70
+      poi_y: 50
+      observationRadius: 10.0
+      coupling: 2
+      reward: 30
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+    - id: 10
+      classID: 0
+      poi_x: 30
+      poi_y: 50
+      observationRadius: 10.0
+      coupling: 2
+      reward: 30
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+    - id: 11
+      classID: 0
+      poi_x: 50
+      poi_y: 30
+      observationRadius: 10.0
+      coupling: 2
+      reward: 30
+      eternalPOI: true # If POI should stay in place forever, or only be active for a window
+      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
    
-    - id: 4
-      classID: 1
-      poi_x: 10
-      poi_y: 10
-      observationRadius: 5.0
-      coupling: 1
-      reward: 10
-      eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      observableWindow: [0, 25] # Timesteps at which POI appears and disappears respectively
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
-      exactCouplingNeeded: true # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
-
-    - id: 5
-      classID: 1
-      poi_x: 10
-      poi_y: 90
-      observationRadius: 5.0
-      coupling: 1
-      reward: 10
-      eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      observableWindow: [25, 50] # Timesteps at which POI appears and disappears respectively
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
-      exactCouplingNeeded: true # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
-
-    - id: 6
-      classID: 1
-      poi_x: 90
-      poi_y: 90
-      observationRadius: 5.0
-      coupling: 1
-      reward: 10
-      eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      observableWindow: [50, 75] # Timesteps at which POI appears and disappears respectively
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
-      exactCouplingNeeded: true # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
-
-    
-    - id: 7
-      classID: 1
-      poi_x: 90
-      poi_y: 10
-      observationRadius: 5.0
-      coupling: 1
-      reward: 10
-      eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      observableWindow: [75, 100] # Timesteps at which POI appears and disappears respectively
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
-      exactCouplingNeeded: true # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 # --------------------------------------
 
 episode:
-  length: 75
+  length: 100
 # --------------------------------------
 
 team:
@@ -127,19 +171,23 @@ agent:
   startingX: 50
   startingY: 50
   maxStepSize: 4
-  observationRadius: 5
+  observationRadius: 10.0
   numberOfSensors: 4
-  nnWeightMin: -5
-  nnWeightMax: 5
+  nnWeightMin: -1
+  nnWeightMax: 1
   noiseMean: 0.0
-  noiseStdDev: 0.01
+  noiseStdDev: 0.05
 # --------------------------------------
 
 evolutionary:
-  populationSize: 300 # Will decide the number of joint policies in the population
+  populationSize: 100 # Will decide the number of joint policies in the population
   numberOfEpisodes: 1 # How many environments an individiual in the generation will be tested on
-  numberOfGenerations: 4
-  numberOfOffsprings: 150 # How many offsprings does the population create in every generation?
-  numberOfParents: 150 # How many individuals are used to make these offsprings?
+  numberOfGenerations: 1000
+  numberOfOffsprings: 50 # How many offsprings does the population create in every generation?
+  numberOfParents: 50 # How many individuals are used to make these offsprings?
   counterfactualType: "static" # Counterfactial agent simply stays in the start position throughout
+# --------------------------------------
+
+experiment:
+  genLogInterval: 25 # Log info about algo every how many generations?
 # --------------------------------------

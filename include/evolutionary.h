@@ -30,6 +30,8 @@ public:
     void differenceEvaluate(const std::string& filename, std::vector<Environment> environments, std::vector<Individual> paretoFront, int paretoIndex, double hypervolume, double lowerBound);
     // return the agents of the team
     std::vector<Agent> getAgents();
+    // return the team of the individual
+    std::string getTeamTrajectoryAsString();
     // mutate the agents' policies with some noise
     void mutate();
 };
@@ -44,6 +46,6 @@ class Evolutionary {
 public:
     std::vector<Individual> population;
     Evolutionary(const std::string& filename);
-    void evolve(const std::string& filename);
+    void evolve(const std::string& filename, const std::string& data_fileneme);
 };
 #endif // EVOLUTIONARY_H

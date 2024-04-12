@@ -1,14 +1,23 @@
 #include <iostream>
 #include <chrono>
-#include "evolutionary.h"
+#include "evolutionary.h" // Include your Evolutionary class header here
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " <config_filename>" << " <data_filename>" << std::endl;
+        return 1; // Return error if the filename is not provided
+    }
+
+    // Extract filename from command-line arguments
+    std::string filename = argv[1];
+    std::string data_filename = argv[2];
+
     // Start the timer
     auto start = std::chrono::steady_clock::now();
 
     // Run your evolutionary algorithm
-    Evolutionary evo("../config/config.yaml");
-    evo.evolve("../config/config.yaml");
+    Evolutionary evo(filename);
+    evo.evolve(filename, data_filename);
 
     // End the timer
     auto end = std::chrono::steady_clock::now();

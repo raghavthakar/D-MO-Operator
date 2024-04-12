@@ -22,31 +22,36 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
     return os;
 }
 
+// = operator
+
 // Constructor
 Agent::Agent(double x, double y, double _maxStepSize, double _observationRadius, 
-    int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double noiseMean, double noiseStdDev) : 
+    int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double _noiseMean, double _noiseStdDev) : 
     posX(x), posY(y), maxStepSize(_maxStepSize), 
-    observationRadius(_observationRadius), numberOfSensors(_numberOfSensors), noiseMean(noiseMean),
-    noiseStdDev(noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds + 1), _nnWeightMin, _nnWeightMax)  {}
+    observationRadius(_observationRadius), numberOfSensors(_numberOfSensors), noiseMean(_noiseMean),
+    noiseStdDev(_noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds) + _numberOfSensors, _nnWeightMin, _nnWeightMax)  {}
+
+// copy constructor
+Agent::Agent(const Agent& other) : posX(other.posX), posY(other.posY), maxStepSize(other.maxStepSize), 
+    observationRadius(other.observationRadius), numberOfSensors(other.numberOfSensors), nnWeightMin(other.nnWeightMin), 
+    nnWeightMax(other.nnWeightMax), noiseMean(other.noiseMean), noiseStdDev(other.noiseStdDev) {
+        this->policy = *std::make_shared<Policy>(other.policy);;
+}
 
 // Function to move the agent by dx, dy (within maximum step size)
 void Agent::move(std::pair<double, double> delta, Environment environment) {
     int environmentXLength = environment.getDimensions().first;
     int environmentYLength = environment.getDimensions().second;
 
-    double dx = delta.first;
-    double dy = delta.second;
+    double dx = delta.first  ;
+    double dy = delta.second ;
 
-    // Calculate the distance to move
-    double distance = sqrt(dx * dx + dy * dy);
+    // dx, dy are between -1 and 1. max step here is sqrt(2), which should corresond to step of maxStepSize
 
-    // Check if the distance is within the maximum step size
-    if (distance > maxStepSize) {
-        // Scale down the movement to stay within the maximum step size
-        double scaleFactor = maxStepSize / distance;
-        dx *= scaleFactor;
-        dy *= scaleFactor;
-    }
+
+    double scaleFactor = maxStepSize / sqrt(2);
+    dx *= scaleFactor;
+    dy *= scaleFactor;
 
     // Calculate the new position within environment limits
     double step_slope = dy / dx;
@@ -357,6 +362,7 @@ std::vector<std::vector<int>> Team::replayWithCounterfactual(const std::string& 
         for(int timestep = 0; timestep < workingTeamTrajectory.size(); timestep++) {
             workingTeamTrajectory[timestep][agentNum] = counterfactualTrajectory[timestep]; // repalce the agent's position with counterfactual
             std::vector<int> timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
+            
             for(int rewIndex = 0; rewIndex < timestepRewards.size(); rewIndex++) {
                 episodeCounterfactualRewards[rewIndex] += timestepRewards[rewIndex]; // add tiemstep rewards to the cumulative episode rewards
             }

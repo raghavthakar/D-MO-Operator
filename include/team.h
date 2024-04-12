@@ -9,7 +9,7 @@
 #include <utility>
 
 class Agent {
-private:
+public:
     double posX; // X-coordinate of the agent's position
     double posY; // Y-coordinate of the agent's position
     double maxStepSize; // Maximum step size the agent can take
@@ -20,12 +20,12 @@ private:
     double noiseMean; // POlicy noise mutate's mean
     double noiseStdDev; // Policy noise mutate's stddev
 
-public:
     // Policy object that stores the agent's neural network
     Policy policy;
 
     // Constructor
     Agent(double x, double y, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds, double nnWeightMin, double nnWeightMax, double noiseMean, double noiseStdDev);
+    Agent(const Agent& other);
 
     // Function to move the agent by dx, dy (within maximum step size)
     void move(std::pair<double, double> delta, Environment environment);
