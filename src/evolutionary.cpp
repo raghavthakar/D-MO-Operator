@@ -220,32 +220,17 @@ void Evolutionary::evolve(const std::string& filename, const std::string& data_f
         // parallelised this
 
         // std::cout<<"Generation: "<<gen<<std::endl;
-        // std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
-        //     ind.evaluate(filename, envs);
+        std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
+            ind.evaluate(filename, envs);
             // for (auto f:ind.fitness) {
             //     std::cout<<f<<",";
             // }
             // std::cout<<std::endl;
-        // });
+        });
 
-        for (auto &ind : population) {
-        //     ind.mutate();
-            auto fpre = ind.fitness;
-            ind.evaluate(filename, envs);
-            auto fpost = ind.fitness;
-
-            if (fpre[0] != fpost[0] || fpre[1] != fpost[1]) {
-                std::cout<<"Individual: "<<ind.id<<std::endl;
-                for (auto f:fpre) {
-                    std::cout<<f<<",";
-                }
-                std::cout<<std::endl;
-                for (auto f:fpost) {
-                    std::cout<<f<<",";
-                }
-                std::cout<<std::endl;
-            }
-        }
+        // for (auto &ind : population) {
+        //     ind.evaluate(filename, envs);
+        // }
         // std::cout<<"Evaluation complete"<<std::endl;
 
         std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
