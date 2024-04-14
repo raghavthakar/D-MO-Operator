@@ -1,6 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include "evolutionary.h" // Include your Evolutionary class header here
+#include "MOD.h" // Include your Evolutionary class header here
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     auto start = std::chrono::steady_clock::now();
 
     // Run your evolutionary algorithm
-    Evolutionary evo(filename);
+    MOD evo(filename);
     evo.evolve(filename, data_filename);
 
     // End the timer

@@ -22,7 +22,7 @@ set(SOURCES
     src/environment.cpp
     src/policy.cpp
     src/team.cpp
-    src/evolutionary.cpp
+    src/MOD.cpp
     src/evolutionary_utils.cpp
     src/main.cpp
 )
