@@ -1,23 +1,29 @@
 #include <iostream>
 #include <chrono>
 #include "MOD.h" // Include your Evolutionary class header here
+#include "NSGA_II.h"
 
 int main(int argc, char* argv[]) {
+    /*
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <config_filename>" << " <data_filename>" << std::endl;
         return 1; // Return error if the filename is not provided
     }
+    */
 
     // Extract filename from command-line arguments
-    std::string filename = argv[1];
-    std::string data_filename = argv[2];
+    std::string filename = "/home/raghav/research/multiobjective_diff_evals/MOD/config/config.yaml";
+    std::string data_filename = "../experiements/data/bakchodi.txt";
 
     // Start the timer
     auto start = std::chrono::steady_clock::now();
 
+    NSGA_II nsga(filename);
+    nsga.evolve(filename, data_filename);
+
     // Run your evolutionary algorithm
     MOD evo(filename);
-    evo.evolve(filename, data_filename);
+    // evo.evolve(filename, data_filename);
 
     // End the timer
     auto end = std::chrono::steady_clock::now();

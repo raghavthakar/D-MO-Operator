@@ -33,43 +33,11 @@ MOD::MOD(const std::string& filename) {
     }
 }
 
-// DECIDE and Generate as many environment configurations as numberOfEpisodes
-std::vector<Environment> MOD::generateTestEnvironments
-    (const std::string& filename) {
-    YAML::Node config = YAML::LoadFile(filename);
-
-    int numberOfEnvironments = numberOfEpisodes;
-    bool differentEnvs = config["environment"]["differentEnvs"].as<bool>();
-
-    std::vector<Environment> testEnvironments;
-    
-    Environment env;
-    env.loadConfig(filename);
-    for(int i = 0; i < numberOfEnvironments; i++) {
-        // Load up a new env configuration if env should be different for each episode
-        if (differentEnvs) {
-            env.reset();
-            env.loadConfig(filename);
-        }
-        testEnvironments.push_back(env);
-    }
-
-    // std::cout<<"''''''''''''''\nGenerated "<<numberOfEnvironments<<" environments.";
-    // for (auto env : testEnvironments) {
-    //     std::cout<<"\nEnv:\n";
-    //     env.printInfo();
-    // }
-    // std::cout<<"'''''''''''''\n";
-
-    return testEnvironments;
-}
-
-
 // Actually run the simulation across teams and evolve them
 void MOD::evolve(const std::string& filename, const std::string& data_fileneme) {
-    std::vector<Environment> envs = generateTestEnvironments(filename);
-
     EvolutionaryUtils evoHelper;
+
+    std::vector<Environment> envs = evoHelper.generateTestEnvironments(filename);
 
     // Compute the origin for the hypervolume computation
     YAML::Node config = YAML::LoadFile(filename);
@@ -91,23 +59,19 @@ void MOD::evolve(const std::string& filename, const std::string& data_fileneme) 
     const int genLogInterval = config["experiment"]["genLogInterval"].as<int>();
     
     // std::cout<<"Hypervolume origin is: "<<lowerBound<<std::endl;
+        
+    std::fstream dataFile;
+    dataFile.open(data_fileneme, std::ios::app);
 
     for (int gen = 0; gen < numberOfGenerations; gen++) {
         // parallelised this
 
         // std::cout<<"Generation: "<<gen<<std::endl;
         std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
-            ind.evaluate(filename, envs);
-            // for (auto f:ind.fitness) {
-            //     std::cout<<f<<",";
-            // }
-            // std::cout<<std::endl;
+            if (ind.fitness[0] == NONE) {
+                ind.evaluate(filename, envs);
+            }
         });
-
-        // for (auto &ind : population) {
-        //     ind.evaluate(filename, envs);
-        // }
-        // std::cout<<"Evaluation complete"<<std::endl;
 
         std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
 
@@ -185,9 +149,6 @@ void MOD::evolve(const std::string& filename, const std::string& data_fileneme) 
             offspring.mutate();
             this->population.push_back(offspring);
         }
-        
-        std::fstream dataFile;
-        dataFile.open(data_fileneme, std::ios::app);
         
         dataFile << "Generation: " << gen << std::endl;
         for (auto pf : paretoFronts) {

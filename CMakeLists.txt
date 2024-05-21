@@ -22,8 +22,9 @@ set(SOURCES
     src/environment.cpp
     src/policy.cpp
     src/team.cpp
-    src/MOD.cpp
     src/evolutionary_utils.cpp
+    src/MOD.cpp
+    src/NSGA_II.cpp
     src/main.cpp
 )
 

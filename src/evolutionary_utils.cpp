@@ -5,6 +5,10 @@
 #include <yaml-cpp/yaml.h>
 #include <pagmo/utils/hypervolume.hpp>
 #include <pagmo/types.hpp>
+#include <vector>
+#include <random>
+#include <algorithm>
+#include <cassert>
 
 const int NONE = std::numeric_limits<int>::min();
 
@@ -12,6 +16,114 @@ const int NONE = std::numeric_limits<int>::min();
 EvolutionaryUtils::EvolutionaryUtils() {
     x=2;
 }
+
+// DECIDE and Generate as many environment configurations as numberOfEpisodes
+std::vector<Environment> EvolutionaryUtils::generateTestEnvironments
+    (const std::string& filename) {
+    YAML::Node config = YAML::LoadFile(filename);
+
+    int numberOfEnvironments = config["evolutionary"]["numberOfEpisodes"].as<int>();
+    bool differentEnvs = config["environment"]["differentEnvs"].as<bool>();
+
+    std::vector<Environment> testEnvironments;
+    
+    Environment env;
+    env.loadConfig(filename);
+    for(int i = 0; i < numberOfEnvironments; i++) {
+        // Load up a new env configuration if env should be different for each episode
+        if (differentEnvs) {
+            env.reset();
+            env.loadConfig(filename);
+        }
+        testEnvironments.push_back(env);
+    }
+
+    return testEnvironments;
+}
+
+// return an individual that has been selected using binary tournamebt selection
+Individual EvolutionaryUtils::binaryTournament(std::vector<std::vector<Individual>> paretoFronts, size_t pSize) {
+    // Randomly select a number within the range of the total number of elements
+
+    Individual* parent1 = nullptr;
+    Individual* parent2 = nullptr;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<size_t> dist(0, pSize - 1);
+
+    size_t selectedIndex = dist(gen);
+    // Find the corresponding inner pareto front for the selected index
+    int indexCounter = 0;
+    for (int i = 0; i < paretoFronts.size(); i++) {
+        for (int j = 0; j < paretoFronts[i].size(); j++) {
+            if (indexCounter == selectedIndex) {
+                parent1 = &paretoFronts[i][j];
+            }
+            indexCounter++;
+        }
+    }
+
+    selectedIndex = dist(gen);
+    // Find the corresponding inner pareto front for the selected index
+    indexCounter = 0;
+    for (int i = 0; i < paretoFronts.size(); i++) {
+        for (int j = 0; j < paretoFronts[i].size(); j++) {
+            if (indexCounter == selectedIndex) {
+                parent2 = &paretoFronts[i][j];
+            }
+            indexCounter++;
+        }
+    }
+
+    // return parent with greater nondominateion level. if smae then return
+    // greater crowding distance
+    if(parent1->nondominationLevel > parent2->nondominationLevel)
+        return *parent1;
+    else if(parent2->nondominationLevel > parent1->nondominationLevel)
+        return *parent2;
+    else {
+        if(parent1->crowdingDistance > parent2->crowdingDistance)
+            return *parent1;
+        else if(parent2->crowdingDistance > parent1->crowdingDistance)
+            return *parent2;
+        else
+            return *parent2;
+    }
+}
+
+// crossover two individuals by getting half the agents from one and half from another
+std::vector<Agent> EvolutionaryUtils::crossover(Individual parent1, Individual parent2) {
+    assert((parent1.getAgents().size() == parent2.getAgents().size())); // both parents should have equal number of agents
+    
+    // generate a list of 0's and a list of 1's
+    std::vector<int> binarySequence;
+    for (int i = 0; i < parent1.getAgents().size(); i++) {
+        if (i < parent1.getAgents().size() / 2)
+            binarySequence.push_back(0);
+        else
+            binarySequence.push_back(1);
+    }
+    
+    // Shuffle the sequence
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(binarySequence.begin(), binarySequence.end(), gen);
+
+    // Mix the agents from both parents to create a new vector
+    std::vector<Agent> offspringAgents;
+    for (int i = 0; i < binarySequence.size(); i++) {
+        if (binarySequence[i] == 0) {
+            offspringAgents.push_back(parent1.getAgents()[i]);
+        }
+        else if (binarySequence[i] == 1) {
+            offspringAgents.push_back(parent2.getAgents()[i]);
+        }
+    }
+
+    return offspringAgents;
+}
+
 
 // Compute the hypervolume contained by the given pareto front
 double EvolutionaryUtils::getHypervolume(std::vector<Individual> individuals, int lowerBound) {
@@ -249,10 +361,13 @@ Individual::Individual(const std::string& filename, int id, std::vector<Agent> a
     YAML::Node config = YAML::LoadFile(filename);
 
     // Initialise the fitness of the individual as NONE
-    int numberOfObjectives = config["environment"]["numberOfClassIds"].as<int>();
-    for(int i = 0; i < numberOfObjectives; i++) {
+    int numObjs = config["environment"]["numberOfClassIds"].as<int>();
+    for(int i = 0; i < numObjs; i++) {
         fitness.push_back(NONE);
     }
+
+    nondominationLevel = 0;
+    crowdingDistance = 0;
 }
 
 std::vector<int> Individual::evaluate(const std::string& filename, std::vector<Environment> environments) {

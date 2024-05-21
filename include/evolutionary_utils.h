@@ -14,6 +14,8 @@ public:
     int id;
     std::vector<int> fitness;
     std::vector<double> differenceEvaluations;
+    u_int nondominationLevel;
+    double crowdingDistance;
     // wrapper around a team to keep it in the population
     Individual(const std::string& filename, int id);
     Individual(const std::string& filename, int id, std::vector<Agent> agents);
@@ -33,6 +35,9 @@ class EvolutionaryUtils {
     int x;
 public:
     EvolutionaryUtils();
+    std::vector<Environment> generateTestEnvironments(const std::string& filename);
+    Individual binaryTournament(std::vector<std::vector<Individual>> paretoFronts, size_t pSize);
+    std::vector<Agent> crossover(Individual parent1, Individual parent2);
     double getHypervolume(std::vector<Individual> individuals, int hypervolumeOrigin); // computes the hypervolume of the given list of individuals
     double getHypervolume(std::vector<std::vector<int>> individualFitnesses, int lowerBound); // computes the hypervolume of the given list of individuals
     bool dominates(Individual a, Individual b); // finds if the individual a dominates individual b
