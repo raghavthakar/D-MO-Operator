@@ -24,6 +24,6 @@ class MOD {
 public:
     std::vector<Individual> population;
     MOD(const std::string& filename);
-    void evolve(const std::string& filename, const std::string& data_fileneme);
+    void evolve(const std::string& filename);
 };
 #endif // MOD_H

@@ -31,7 +31,7 @@ NSGA_II::NSGA_II(const std::string& filename) {
 }
 
 // Actually run the simulation across teams and evolve them
-void NSGA_II::evolve(const std::string& filename, const std::string& data_fileneme) {
+void NSGA_II::evolve(const std::string& filename) {
     EvolutionaryUtils evoHelper;
 
     std::vector<Environment> envs = evoHelper.generateTestEnvironments(filename);
@@ -51,10 +51,6 @@ void NSGA_II::evolve(const std::string& filename, const std::string& data_filene
 
     // Log info about the algo every how many gens?
     const int genLogInterval = config["experiment"]["genLogInterval"].as<int>();
-
-    // Open the data file for logging info dump
-    std::fstream dataFile;
-    dataFile.open(data_fileneme, std::ios::app);
 
     // -----------NSGA Base Case--------------
     
@@ -161,33 +157,11 @@ void NSGA_II::evolve(const std::string& filename, const std::string& data_filene
             Individual parent2 = evoHelper.binaryTournament(paretoFronts, populationSize);
 
             // b) crossover such that half of offspring comes from parent1, the other half from parent2
-            // generate a random list of indices = 1/2 of size of offspring and supply those from parent1
+            // generate a random list of indices = 1/2 of size of offspring and supply those agents from parent1
             // supply the others from parent2
             std::vector<Agent> offspringAgents = evoHelper.crossover(parent1, parent2);
             population.push_back(Individual(filename, teamIDCounter++, offspringAgents));
         }
         
-        /*dataFile << "Generation: " << gen << std::endl;
-        for (auto pf : paretoFronts) {
-            for (auto ind : pf) {
-                dataFile << "Individual " <<ind.id <<" fitness: ";
-                for (auto f : ind.fitness) {
-                    dataFile << f <<",";
-                }
-                dataFile << std::endl;
-
-                dataFile << "Individual " << ind.id << " difference impacts: ";
-                for (double diffImpact : ind.differenceEvaluations) {
-                    dataFile << diffImpact << ",";
-                }
-                dataFile << std::endl;
-
-                if (gen % genLogInterval == 0) {
-                    dataFile << "Individual's " << ind.id << " team trajectory: "<<std::endl;
-                    dataFile << ind.getTeamTrajectoryAsString();
-                }
-            }
-        }
-        dataFile << std::endl; */
     }
 }

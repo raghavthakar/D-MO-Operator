@@ -13,17 +13,16 @@ int main(int argc, char* argv[]) {
 
     // Extract filename from command-line arguments
     std::string filename = "/home/raghav/research/multiobjective_diff_evals/MOD/config/config.yaml";
-    std::string data_filename = "../experiements/data/bakchodi.txt";
 
     // Start the timer
     auto start = std::chrono::steady_clock::now();
 
     NSGA_II nsga(filename);
-    nsga.evolve(filename, data_filename);
+    // nsga.evolve(filename);
 
     // Run your evolutionary algorithm
     MOD evo(filename);
-    // evo.evolve(filename, data_filename);
+    evo.evolve(filename);
 
     // End the timer
     auto end = std::chrono::steady_clock::now();

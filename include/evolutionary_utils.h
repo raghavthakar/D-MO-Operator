@@ -4,6 +4,8 @@
 #include "policy.h"
 #include "team.h"
 #include "environment.h"
+#include <unordered_map>
+#include <any>
 
 class Individual;
 class EvolutionaryUtils;
@@ -49,6 +51,18 @@ public:
     std::vector<std::vector<double>> transpose(std::vector<std::vector<double>> matrix);
     std::vector<double> getColumn(std::vector<std::vector<double>> matrix, int colNum);
 
+};
+
+class DataArranger {
+    std::unordered_map<std::string, std::string> _data;
+public:
+    DataArranger();
+    void addData(std::string key, double data_);
+    void addData(std::string key, std::vector<double> data_);
+    void addData(std::string key, std::vector<int> data_);
+    void addData(std::string key, std::string data_);
+    void clear();
+    std::unordered_map<std::string, std::string> get();
 };
 
 #endif // EVOLUTIONARY_H

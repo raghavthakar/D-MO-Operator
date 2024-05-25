@@ -34,7 +34,7 @@ MOD::MOD(const std::string& filename) {
 }
 
 // Actually run the simulation across teams and evolve them
-void MOD::evolve(const std::string& filename, const std::string& data_fileneme) {
+void MOD::evolve(const std::string& filename) {
     EvolutionaryUtils evoHelper;
 
     std::vector<Environment> envs = evoHelper.generateTestEnvironments(filename);
@@ -58,10 +58,8 @@ void MOD::evolve(const std::string& filename, const std::string& data_fileneme) 
     // log info about the algo every how many gens?
     const int genLogInterval = config["experiment"]["genLogInterval"].as<int>();
     
-    // std::cout<<"Hypervolume origin is: "<<lowerBound<<std::endl;
-        
-    std::fstream dataFile;
-    dataFile.open(data_fileneme, std::ios::app);
+    // initialise an empty data dict with just the keys (used for logging data)
+    DataArranger dataHelper;
 
     for (int gen = 0; gen < numberOfGenerations; gen++) {
         // parallelised this
@@ -93,7 +91,6 @@ void MOD::evolve(const std::string& filename, const std::string& data_fileneme) 
             paretoFronts.push_back(innerPF);
             workingPopulation = evoHelper.without(workingPopulation, innerPF); // remove the newest pareto front from working population
         }
-        // std::cout<<"working population set"<<std::endl;
 
         // remove the non-pareto solutions from the population
         this->population = evoHelper.without(this->population, workingPopulation);
@@ -143,35 +140,51 @@ void MOD::evolve(const std::string& filename, const std::string& data_fileneme) 
                 }
             }
             
-            // TODO: MUTATION IS AFFECTING PARENT INDIVIDUAL'S AGENTS!!!!! NOT GOOD!!!!
             // 4. Create a team from these assembled joint policies and add it to the populatino
             Individual offspring = Individual(filename, this->teamIDCounter++, offSpringsAgents);
             offspring.mutate();
             this->population.push_back(offspring);
         }
-        
-        dataFile << "Generation: " << gen << std::endl;
-        for (auto pf : paretoFronts) {
-            for (auto ind : pf) {
-                dataFile << "Individual " <<ind.id <<" fitness: ";
-                for (auto f : ind.fitness) {
-                    dataFile << f <<",";
-                }
-                dataFile << std::endl;
 
-                dataFile << "Individual " << ind.id << " difference impacts: ";
-                for (double diffImpact : ind.differenceEvaluations) {
-                    dataFile << diffImpact << ",";
-                }
-                dataFile << std::endl;
-
-                if (gen % genLogInterval == 0) {
-                    dataFile << "Individual's " << ind.id << " team trajectory: "<<std::endl;
-                    dataFile << ind.getTeamTrajectoryAsString();
-                }
+        // --------------------DATA LOGGING------------------------
+        if (gen + 1 < numberOfGenerations) { // dont log data for the last generation
+        int numinds = population.size();
+            for (auto ind : population) {
+                std::cout<<"Individual: "<<numinds--<<std::endl;
+                dataHelper.clear();
+                
+                std::cout<<"Going to add gen"<<gen<<std::endl;
+                dataHelper.addData("gen", gen);
+                
+                std::cout<<"Going to add ind id"<<ind.id<<std::endl;
+                dataHelper.addData("individual_id", ind.id);
+               
+                std::cout<<"Going to add fitness";
+                for (auto f : ind.fitness) std::cout<<f<<",";
+                std::cout<<std::endl;
+                dataHelper.addData("fitness", ind.fitness);
+               
+                std::cout<<"Going to add diff impacts";
+                for (auto f : ind.differenceEvaluations) std::cout<<f<<",";
+                std::cout<<std::endl;
+                dataHelper.addData("difference_impacts", ind.differenceEvaluations);
+               
+                std::cout<<"Going to add nondom level"<<ind.nondominationLevel<<std::endl;
+                dataHelper.addData("nondomination_level", ind.nondominationLevel);
+                
+                std::cout<<"Going to add crowding dist"<<ind.crowdingDistance<<std::endl;
+                dataHelper.addData("crowding_distance", ind.crowdingDistance);
+                
+                std::cout<<"Going to add traj"<<ind.getTeamTrajectoryAsString()<<std::endl;
+                dataHelper.addData("trajectories", ind.getTeamTrajectoryAsString());
             }
+
+            auto tempdat = dataHelper.get();
+            for (const auto& pair : tempdat) {
+                std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+            } 
         }
-        dataFile << std::endl;
+        // --------------------------------------------------------
     }
 }
 

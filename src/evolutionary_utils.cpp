@@ -355,6 +355,9 @@ Individual::Individual(const std::string& filename, int id) : team(filename, id)
     for(int i = 0; i < numberOfObjectives; i++) {
         fitness.push_back(NONE);
     }
+
+    nondominationLevel = 0;
+    crowdingDistance = 0;
 }
 
 Individual::Individual(const std::string& filename, int id, std::vector<Agent> agents) : team(filename, agents, id), id(id) {
@@ -462,6 +465,12 @@ std::vector<Agent> Individual::getAgents() {
 
 // return the individual's team trajectory
 std::string Individual::getTeamTrajectoryAsString() {
+    // return an empty string if the team does not have a stored trajectory yet
+    if (this->team.teamTrajectory.size() == 0) {
+        std::string output = "";
+        return output;
+    }
+
     std::stringstream output;
     
     // return the trajectory transpose (so each row is one agent's trajectory now)
@@ -473,4 +482,58 @@ std::string Individual::getTeamTrajectoryAsString() {
     }
 
     return output.str();
+}
+
+// add new data (with key if non-existant, or update if existant)
+// processes data and adds it as string
+// because saving data as string is pretty easy
+void DataArranger::addData(std::string key, double data_) {
+    std::stringstream dataToAdd;
+    std::cout<<"Datastream created\n";
+    dataToAdd << data_;
+    std::cout<<"Datastream filled\n";
+
+    _data[key] = dataToAdd.str();
+    std::cout<<"Data added\n";
+}
+
+// overload for vectors of double
+void DataArranger::addData(std::string key, std::vector<double> data_) {
+    std::stringstream dataToAdd;
+    
+    for (auto x : data_)
+        dataToAdd << x;
+
+    _data[key] = dataToAdd.str();
+}
+
+// overload for vectors of int
+void DataArranger::addData(std::string key, std::vector<int> data_) {
+    std::stringstream dataToAdd;
+    
+    for (auto x : data_)
+        dataToAdd << x;
+
+    _data[key] = dataToAdd.str();
+}
+
+// overload for strings
+void DataArranger::addData(std::string key, std::string data_) {
+    _data[key] = data_;
+}
+
+// default constructor
+DataArranger::DataArranger() {
+    int s = 2;
+}
+
+
+// clear and empty the dict of all data
+void DataArranger::clear() {
+    _data.clear();
+}
+
+// return the organised data in the dict as an unordered map
+std::unordered_map<std::string, std::string> DataArranger::get() {
+    return _data;
 }
