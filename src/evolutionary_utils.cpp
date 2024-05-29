@@ -489,12 +489,8 @@ std::string Individual::getTeamTrajectoryAsString() {
 // because saving data as string is pretty easy
 void DataArranger::addData(std::string key, double data_) {
     std::stringstream dataToAdd;
-    std::cout<<"Datastream created\n";
     dataToAdd << data_;
-    std::cout<<"Datastream filled\n";
-
     _data[key] = dataToAdd.str();
-    std::cout<<"Data added\n";
 }
 
 // overload for vectors of double
