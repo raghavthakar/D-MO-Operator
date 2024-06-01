@@ -31,7 +31,7 @@ NSGA_II::NSGA_II(const std::string& filename) {
 }
 
 // Actually run the simulation across teams and evolve them
-void NSGA_II::evolve(const std::string& filename) {
+void NSGA_II::evolve(const std::string& filename, const std::string& data_filename) {
     EvolutionaryUtils evoHelper;
 
     std::vector<Environment> envs = evoHelper.generateTestEnvironments(filename);
@@ -57,7 +57,9 @@ void NSGA_II::evolve(const std::string& filename) {
     for (int gen = 0; gen < numberOfGenerations; gen++) {
         // std::cout<<"Generation: "<<gen<<std::endl;
         std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
-            ind.evaluate(filename, envs);
+            if (ind.fitness[0] == NONE) {
+                ind.evaluate(filename, envs);
+            }
         });
 
         std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
@@ -149,6 +151,23 @@ void NSGA_II::evolve(const std::string& filename) {
                 pfSize++;
             }
         }
+
+        // --------------------DATA LOGGING------------------------
+        // initialise an empty data dict with just the keys (used for logging data)
+        DataArranger dataHelper(data_filename);
+        int numinds = population.size();
+        for (auto ind : population) {
+            dataHelper.clear();
+            dataHelper.addData("gen", gen);
+            dataHelper.addData("individual_id", ind.id);
+            dataHelper.addData("fitness", ind.fitness);
+            dataHelper.addData("difference_impacts", ind.differenceEvaluations);
+            dataHelper.addData("nondomination_level", ind.nondominationLevel);
+            dataHelper.addData("crowding_distance", ind.crowdingDistance);
+            dataHelper.addData("trajectories", ind.getTeamTrajectoryAsString());
+            dataHelper.write();
+        }
+        // --------------------------------------------------------
 
         // 5. offsprings
         for (int i = 0; i < numberOfOffsprings; i++) { // generate as many offsprings as the current size of the population

@@ -24,7 +24,7 @@ class NSGA_II {
 public:
     std::vector<Individual> population;
     NSGA_II(const std::string& filename);
-    void evolve(const std::string& filename);
+    void evolve(const std::string& filename, const std::string& data_filename);
 };
 
 #endif // NSGA_II_H

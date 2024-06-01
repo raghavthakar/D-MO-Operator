@@ -1,28 +1,60 @@
 #include <iostream>
+#include <fstream>
 #include <chrono>
+#include <ctime>
+#include <sstream>
 #include "MOD.h" // Include your Evolutionary class header here
 #include "NSGA_II.h"
 
-int main(int argc, char* argv[]) {
-    /*
-    if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <config_filename>" << " <data_filename>" << std::endl;
-        return 1; // Return error if the filename is not provided
-    }
-    */
+// Function to get current date and time as a string
+std::string getCurrentDateTimeString() {
+    auto now = std::chrono::system_clock::now();
+    auto now_time_t = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::localtime(&now_time_t);
+    
+    std::ostringstream oss;
+    oss << std::put_time(&now_tm, "%Y-%m-%d_%H-%M-%S");
+    return oss.str();
+}
 
+int main(int argc, char* argv[]) {
     // Extract filename from command-line arguments
-    std::string filename = "/home/raghav/research/multiobjective_diff_evals/MOD/config/config.yaml";
+    std::string project_root = "/home/raghav/research/multiobjective_diff_evals/MOD/";
+    std::string config_filename = project_root + "config/config.yaml";
+    std::string data_filename_root = project_root + "experiments/data/"; // Default data filename with current date and time
 
     // Start the timer
     auto start = std::chrono::steady_clock::now();
+    
+    if (argc == 4) {
+        config_filename = argv[1];
+        std::string data_filename = argv[2];
+        std::string alg = argv[3];
 
-    NSGA_II nsga(filename);
-    // nsga.evolve(filename);
+        if (alg == "nsga") {
+            NSGA_II nsga(config_filename);
+            nsga.evolve(config_filename, data_filename);
+        } else if (alg == "mod") {
+            MOD evo(config_filename);
+            evo.evolve(config_filename, data_filename);
+        }
+    } else {
+        // create a copy of the config file
+        auto currentDateTimeString = getCurrentDateTimeString();
 
-    // Run your evolutionary algorithm
-    MOD evo(filename);
-    evo.evolve(filename);
+        std::ifstream configSrc(config_filename, std::ios::binary);
+        std::ofstream configDst(data_filename_root + currentDateTimeString + "_config.yaml", std::ios::binary);
+        configDst << configSrc.rdbuf();
+
+        configSrc.close();
+        configDst.close();
+
+        NSGA_II nsga(config_filename);
+        nsga.evolve(config_filename, data_filename_root + currentDateTimeString + "_NSGA_II_.csv");
+        MOD evo(config_filename);
+        evo.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_.csv");
+    }
+    
 
     // End the timer
     auto end = std::chrono::steady_clock::now();

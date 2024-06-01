@@ -6,6 +6,7 @@
 #include "environment.h"
 #include <unordered_map>
 #include <any>
+#include <string>
 
 class Individual;
 class EvolutionaryUtils;
@@ -50,19 +51,20 @@ public:
     int softmaxSelection(std::vector<double> probabilities);
     std::vector<std::vector<double>> transpose(std::vector<std::vector<double>> matrix);
     std::vector<double> getColumn(std::vector<std::vector<double>> matrix, int colNum);
-
 };
 
 class DataArranger {
-    std::unordered_map<std::string, std::string> _data;
+    std::map<std::string, std::string> _data;
+    std::string _data_filename;
 public:
-    DataArranger();
+    DataArranger(std::string data_filename_);
     void addData(std::string key, double data_);
     void addData(std::string key, std::vector<double> data_);
     void addData(std::string key, std::vector<int> data_);
     void addData(std::string key, std::string data_);
     void clear();
-    std::unordered_map<std::string, std::string> get();
+    std::map<std::string, std::string> get();
+    void write();
 };
 
 #endif // EVOLUTIONARY_H

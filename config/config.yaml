@@ -76,7 +76,7 @@ environment:
       coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 5
@@ -87,7 +87,7 @@ environment:
       coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 6
@@ -98,7 +98,7 @@ environment:
       coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 7
@@ -109,7 +109,7 @@ environment:
       coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 8
@@ -120,7 +120,7 @@ environment:
       coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 9
@@ -131,7 +131,7 @@ environment:
       coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 10
@@ -142,7 +142,7 @@ environment:
       coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
     - id: 11
@@ -153,13 +153,13 @@ environment:
       coupling: 2
       reward: 30
       eternalPOI: true # If POI should stay in place forever, or only be active for a window
-      rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
+      rewardOnce: true # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
       exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
    
 # --------------------------------------
 
 episode:
-  length: 10
+  length: 100
 # --------------------------------------
 
 team:
@@ -180,11 +180,11 @@ agent:
 # --------------------------------------
 
 evolutionary:
-  populationSize: 4 # Will decide the number of joint policies in the population
+  populationSize: 100 # Will decide the number of joint policies in the population
   numberOfEpisodes: 1 # How many environments an individiual in the generation will be tested on
-  numberOfGenerations: 5
-  numberOfOffsprings: 2 # How many offsprings does the population create in every generation?
-  numberOfParents: 2 # How many individuals are used to make these offsprings?
+  numberOfGenerations: 50
+  numberOfOffsprings: 100 # How many offsprings does the population create in every generation?
+  numberOfParents: 100 # How many individuals are used to make these offsprings?
   counterfactualType: "static" # Counterfactial agent simply stays in the start position throughout
 # --------------------------------------
 

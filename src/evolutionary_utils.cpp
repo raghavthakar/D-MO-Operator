@@ -9,6 +9,8 @@
 #include <random>
 #include <algorithm>
 #include <cassert>
+#include <fstream>
+#include <filesystem>
 
 const int NONE = std::numeric_limits<int>::min();
 
@@ -443,6 +445,7 @@ void Individual::differenceEvaluate(const std::string& filename, std::vector<Env
     //     exit(1);
     // }
 
+    this->differenceEvaluations.clear(); // clear the existing difference impacts
     for (int i=0; i<this->team.agents.size(); i++) { // add each counterfactual fitness to the working pareto front
         paretoFitnesses.push_back(cumulativeReplayRewards[i]);
         double counterfactualHypervolume = evoHelper.getHypervolume(paretoFitnesses, lowerBound); // get the hypervolume with this counterfactual fitness inserted
@@ -472,14 +475,18 @@ std::string Individual::getTeamTrajectoryAsString() {
     }
 
     std::stringstream output;
+    output << "[";
     
     // return the trajectory transpose (so each row is one agent's trajectory now)
     for (int i=0; i<this->team.teamTrajectory[0].size(); i++) {
+        output << "[";
         for (int j=0; j < team.teamTrajectory.size(); j++) {
-            output << team.teamTrajectory[j][i].first << "," << team.teamTrajectory[j][i].second << " ";
+            output << "(" << team.teamTrajectory[j][i].first << "," << team.teamTrajectory[j][i].second << "), ";
         }
-        output << std::endl;
+        output << "],";
     }
+
+    output << "]";
 
     return output.str();
 }
@@ -487,40 +494,40 @@ std::string Individual::getTeamTrajectoryAsString() {
 // add new data (with key if non-existant, or update if existant)
 // processes data and adds it as string
 // because saving data as string is pretty easy
-void DataArranger::addData(std::string key, double data_) {
-    std::stringstream dataToAdd;
-    dataToAdd << data_;
-    _data[key] = dataToAdd.str();
-}
+    void DataArranger::addData(std::string key, double data_) {
+        std::stringstream dataToAdd;
+        dataToAdd << data_;
+        _data[key] = dataToAdd.str();
+    }
 
-// overload for vectors of double
-void DataArranger::addData(std::string key, std::vector<double> data_) {
-    std::stringstream dataToAdd;
-    
-    for (auto x : data_)
-        dataToAdd << x;
+    // overload for vectors of double
+    void DataArranger::addData(std::string key, std::vector<double> data_) {
+        std::stringstream dataToAdd;
 
-    _data[key] = dataToAdd.str();
-}
+        for (auto x : data_)
+            dataToAdd << x <<",";
+            
+        _data[key] = dataToAdd.str();
+    }
 
-// overload for vectors of int
-void DataArranger::addData(std::string key, std::vector<int> data_) {
-    std::stringstream dataToAdd;
-    
-    for (auto x : data_)
-        dataToAdd << x;
+    // overload for vectors of int
+    void DataArranger::addData(std::string key, std::vector<int> data_) {
+        std::stringstream dataToAdd;
+        
+        for (auto x : data_)
+            dataToAdd << x <<",";
 
-    _data[key] = dataToAdd.str();
-}
+        _data[key] = dataToAdd.str();
+    }
 
-// overload for strings
-void DataArranger::addData(std::string key, std::string data_) {
-    _data[key] = data_;
-}
+    // overload for strings
+    void DataArranger::addData(std::string key, std::string data_) {
+        _data[key] = data_;
+    }
 
 // default constructor
-DataArranger::DataArranger() {
-    int s = 2;
+DataArranger::DataArranger(std::string data_filename_) {
+    this->_data_filename = data_filename_;
 }
 
 
@@ -530,6 +537,37 @@ void DataArranger::clear() {
 }
 
 // return the organised data in the dict as an unordered map
-std::unordered_map<std::string, std::string> DataArranger::get() {
+std::map<std::string, std::string> DataArranger::get() {
     return _data;
+}
+
+// // write data to the datafile
+void DataArranger::write() {
+    // Can't write if filename or data absent
+    if (_data_filename.empty())
+        return;
+    if (_data.empty())
+        return;
+    
+    bool fileExists = std::filesystem::exists(_data_filename);
+    std::ofstream file;
+    
+    if (fileExists) {
+        file.open(_data_filename, std::ios::app);
+    } else {
+        file.open(_data_filename, std::ios::out);
+        // Write column titles as keys from this->_data
+        for (const auto& [key, _] : _data) {
+            file << key << ";";
+        }
+        file << "\n";
+    }
+    
+    // Append this->_data values to the file
+    for (const auto& [_, value] : _data) {
+        file << value << ";";
+    }
+    file << "\n";
+    
+    file.close();
 }
