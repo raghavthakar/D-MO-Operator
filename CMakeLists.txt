@@ -25,6 +25,7 @@ set(SOURCES
     src/evolutionary_utils.cpp
     src/MOD.cpp
     src/MOD_ablated.cpp
+    src/MOD_team_ablated.cpp
     src/NSGA_II.cpp
     src/main.cpp
 )

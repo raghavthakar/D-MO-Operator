@@ -1,4 +1,4 @@
-#include "MOD_ablated.h"
+#include "MOD_team_ablated.h"
 #include "evolutionary_utils.h"
 #include "environment.h"
 #include "policy.h"
@@ -19,7 +19,7 @@
 const int NONE = std::numeric_limits<int>::min();
 
 
-MODAblated::MODAblated(const std::string& filename) {
+MODTeamAblated::MODTeamAblated(const std::string& filename) {
     YAML::Node config = YAML::LoadFile(filename);
     const YAML::Node& evolutionary_config = config["evolutionary"];
 
@@ -34,7 +34,7 @@ MODAblated::MODAblated(const std::string& filename) {
 }
 
 // Actually run the simulation across teams and evolve them
-void MODAblated::evolve(const std::string& filename, const std::string& data_filename) {
+void MODTeamAblated::evolve(const std::string& filename, const std::string& data_filename) {
     EvolutionaryUtils evoHelper;
 
     std::vector<Environment> envs = evoHelper.generateTestEnvironments(filename);
@@ -100,8 +100,10 @@ void MODAblated::evolve(const std::string& filename, const std::string& data_fil
         for (int i = 0; i < paretoFronts.size(); ++i) {
             double paretoHypervolume = evoHelper.getHypervolume(paretoFronts[i], lowerBound);
             for (int j = 0; j < paretoFronts[i].size(); ++j) {
-                // instead of difference evaluating, simply assign MOD value, the hypervolume of paretofront that team is on
-                paretoFronts[i][j].differenceEvaluations = std::vector<double>(paretoFronts[i][j].getAgents().size(), paretoHypervolume);
+                std::vector<Individual> counterfactualParetoFront = evoHelper.without(paretoFronts[i], {paretoFronts[i][j]});
+                double counterfactualParetoHypervolume = evoHelper.getHypervolume(counterfactualParetoFront, lowerBound);
+                // team-level different evaluation: hypervolume with and without the team
+                paretoFronts[i][j].differenceEvaluations = std::vector<double>(paretoFronts[i][j].getAgents().size(), paretoHypervolume-counterfactualParetoHypervolume);
                 population.push_back(paretoFronts[i][j]); // push the evaluated elite back into the population
             }
         }
