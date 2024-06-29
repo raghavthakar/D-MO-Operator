@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
         } else if (alg == "mod_abl") {
             MODAblated abl(config_filename);
             abl.evolve(config_filename, data_filename);
-        } else if (alg == "mod_team_abl") {
-            MODTeamAblated team_abl(config_filename);
-            team_abl.evolve(config_filename, data_filename);
+        // } else if (alg == "mod_team_abl") {
+        //     MODTeamAblated team_abl(config_filename);
+        //     team_abl.evolve(config_filename, data_filename);
         }
     } else {
         // create a copy of the config file
@@ -57,14 +57,14 @@ int main(int argc, char* argv[]) {
         configSrc.close();
         configDst.close();
 
-        // NSGA_II nsga(config_filename);
-        // nsga.evolve(config_filename, data_filename_root + currentDateTimeString + "_NSGA_II_.csv");
-        // MOD evo(config_filename);
-        // evo.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_.csv");
-        // MODAblated abl(config_filename);
-        // abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_ABLATED_.csv");
-        MODTeamAblated team_abl(config_filename);
-        team_abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_TEAM_ABLATED_.csv");
+        NSGA_II nsga(config_filename);
+        nsga.evolve(config_filename, data_filename_root + currentDateTimeString + "_NSGA_II_.csv");
+        MOD evo(config_filename);
+        evo.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_.csv");
+        MODAblated abl(config_filename);
+        abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_ABLATED_.csv");
+        // MODTeamAblated team_abl(config_filename);
+        // team_abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_TEAM_ABLATED_.csv");
     }
     
 
