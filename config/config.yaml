@@ -3,8 +3,8 @@ environment:
   numberOfPOIs: 8
   numberOfClassIds: 2
   dimensions:
-    xLength: 120
-    yLength: 120
+    xLength: 160
+    yLength: 160
   penalty: -1 # Timestep penalty per agent
   
   randomPOIConfig: false # If POIs should be generated randomly
@@ -35,7 +35,7 @@ environment:
     - id: 1
       classID: 1
       poi_x: 20
-      poi_y: 100
+      poi_y: 140
       observationRadius: 5.0
       coupling: 2
       reward: 30
@@ -46,8 +46,8 @@ environment:
 
     - id: 2
       classID: 1
-      poi_x: 100
-      poi_y: 100
+      poi_x: 140
+      poi_y: 140
       observationRadius: 5.0
       coupling: 2
       reward: 30
@@ -58,7 +58,7 @@ environment:
 
     - id: 3
       classID: 1
-      poi_x: 100
+      poi_x: 140
       poi_y: 20
       observationRadius: 5.0
       coupling: 2
@@ -71,7 +71,7 @@ environment:
     - id: 4
       classID: 0
       poi_x: 40
-      poi_y: 60
+      poi_y: 80
       observationRadius: 5.0
       coupling: 2
       reward: 20
@@ -81,7 +81,7 @@ environment:
 
     - id: 5
       classID: 0
-      poi_x: 60
+      poi_x: 80
       poi_y: 40
       observationRadius: 5.0
       coupling: 2
@@ -92,8 +92,8 @@ environment:
 
     - id: 6
       classID: 0
-      poi_x: 80
-      poi_y: 60
+      poi_x: 120
+      poi_y: 80
       observationRadius: 5.0
       coupling: 2
       reward: 20
@@ -103,8 +103,8 @@ environment:
 
     - id: 7
       classID: 0
-      poi_x: 60
-      poi_y: 80
+      poi_x: 80
+      poi_y: 120
       observationRadius: 5.0
       coupling: 2
       reward: 20
@@ -115,7 +115,7 @@ environment:
 # --------------------------------------
 
 episode:
-  length: 160
+  length: 240
 # --------------------------------------
 
 team:
@@ -124,8 +124,8 @@ team:
 
 agent:
   randomStartPosition: false
-  startingX: 60
-  startingY: 60
+  startingX: 80
+  startingY: 80
   maxStepSize: 4
   observationRadius: 10.0
   numberOfSensors: 4
