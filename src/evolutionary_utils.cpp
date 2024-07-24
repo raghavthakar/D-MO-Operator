@@ -272,8 +272,8 @@ std::vector<Individual> EvolutionaryUtils::cull(const std::vector<Individual> PF
     }
 }
 
-// Select an element from a row using softmax selection
-int EvolutionaryUtils::softmaxSelection(std::vector<double> probabilities) {
+// Select an element from a row using roulette wheel selection
+int EvolutionaryUtils::rouletteWheelSelection(std::vector<double> probabilities) {
     std::random_device rd; // Obtain a random number from hardware
     std::mt19937 gen(rd()); // Seed the random number engine with rd
     // Define a distribution for the random numbers

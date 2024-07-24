@@ -61,13 +61,13 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
     for (int gen = 0; gen < numberOfGenerations; gen++) {
         // parallelised this
 
-        // std::cout<<"Generation: "<<gen<<std::endl;
+        std::cout<<"Generation: "<<gen<<std::endl;
         std::for_each(std::execution::par, population.begin(), population.end(), [&](Individual& ind) {
             if (ind.fitness[0] == NONE) {
                 ind.evaluate(filename, envs);
             }
         });
-        // std::cout<<"Done evalsuting\n";
+        std::cout<<"Done evalsuting\n";
 
         std::vector<std::vector<Individual>> paretoFronts; // Better PFs first
 
@@ -86,14 +86,14 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
             paretoFronts.push_back(innerPF);
             population = evoHelper.without(population, innerPF); // remove the newest pareto front from working population
         }
-        // std::cout<<"Done making pfs\n";
+        std::cout<<"Done making pfs\n";
 
         // remove the non-pareto solutions from the population
         // this->population = evoHelper.without(this->population, workingPopulation);
         this->population.clear(); // empty out the popoulation
-        // std::cout<<"Done clearing population\n";
+        std::cout<<"Done clearing population\n";
         
-        // std::cout<<"this population set: "<<this->population.size()<<std::endl;
+        std::cout<<"this population set: "<<this->population.size()<<std::endl;
 
         // 2. Update agent-level difference impact/reward for each solution on the above pareto fronts
         // #pragma omp parallel for
@@ -107,7 +107,7 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
                 population.push_back(paretoFronts[i][j]); // push the evaluated elite back into the population
             }
         }
-        // std::cout<<"difference evaluations complete"<<std::endl;
+        std::cout<<"difference evaluations complete"<<std::endl;
 
         // for (auto ind : population) {
         //     auto de = ind.differenceEvaluations;
@@ -144,19 +144,19 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
                 differenceImpactsMatrix.push_back(paretoFronts[i][j].differenceEvaluations);
             }
         }
-        // std::cout<<"difference impact matrix formed"<<std::endl;
+        std::cout<<"difference impact matrix formed"<<std::endl;
         
         // required number of new agents are added
         for (int newIndividualNum = 0; newIndividualNum < numberOfOffsprings; newIndividualNum++) {
-            // std::cout<<"\tCreating ind "<<newIndividualNum<<"\n";
+            std::cout<<"\tCreating ind "<<newIndividualNum<<"\n";
             std::vector<Agent> offSpringsAgents;
 
             for (int agentIndex=0; agentIndex<differenceImpactsMatrix[0].size(); agentIndex++) {
                 std::vector<double> selectionProbabilities = evoHelper.getColumn(differenceImpactsMatrix, agentIndex);
-                // std::cout<<"\t\tselection probs found\n";
-                int selectedIndIndex = evoHelper.softmaxSelection(selectionProbabilities); // get an index of the selected individual for thatagent's policy
-                // std::cout<<"\t\tsoftmax found\n";
-                // std::cout<<"Selected index is: "<<selectedIndIndex<<std::endl;
+                std::cout<<"\t\tselection probs found\n";
+                int selectedIndIndex = evoHelper.rouletteWheelSelection(selectionProbabilities); // get an index of the selected individual for thatagent's policy
+                std::cout<<"\t\tsoftmax found\n";
+                std::cout<<"Selected index is: "<<selectedIndIndex<<std::endl;
                 // find this individual on the pareto front
                 int indexCounter = 0;
                 for (int i=0; i<paretoFronts.size(); i++) {
@@ -164,7 +164,7 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
                         if (indexCounter == selectedIndIndex) {
                             auto selectedAgent = paretoFronts[i][ii].getAgents()[agentIndex];
                             offSpringsAgents.push_back(selectedAgent); // add this agent to the offspring agents
-                            // std::cout<<"\t\tagent pushed\n";
+                            std::cout<<"\t\tagent pushed\n";
                         }
                         indexCounter++;
                     }
@@ -176,7 +176,7 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
             offspring.mutate();
             this->population.push_back(offspring);
         }
-        // std::cout<<"Done offpsrings\n";
+        std::cout<<"Done offpsrings\n";
     }
 }
 

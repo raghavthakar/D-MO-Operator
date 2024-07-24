@@ -152,7 +152,7 @@ void MODAblated::evolve(const std::string& filename, const std::string& data_fil
             for (int agentIndex=0; agentIndex<differenceImpactsMatrix[0].size(); agentIndex++) {
                 std::vector<double> selectionProbabilities = evoHelper.getColumn(differenceImpactsMatrix, agentIndex);
                 // std::cout<<"\t\tselection probs found\n";
-                int selectedIndIndex = evoHelper.softmaxSelection(selectionProbabilities); // get an index of the selected individual for thatagent's policy
+                int selectedIndIndex = evoHelper.rouletteWheelSelection(selectionProbabilities); // get an index of the selected individual for thatagent's policy
                 // std::cout<<"\t\tsoftmax found\n";
                 // std::cout<<"Selected index is: "<<selectedIndIndex<<std::endl;
                 // find this individual on the pareto front
