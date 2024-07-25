@@ -100,10 +100,19 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
         for (int i = 0; i < paretoFronts.size(); ++i) {
             double paretoHypervolume = evoHelper.getHypervolume(paretoFronts[i], lowerBound);
             for (int j = 0; j < paretoFronts[i].size(); ++j) {
-                std::vector<Individual> counterfactualParetoFront = evoHelper.without(paretoFronts[i], {paretoFronts[i][j]});
+                std::vector<Individual> identicalFitnessIndividuals;
+                // loop through the pareto front and find identical fitness individuals
+                for (const auto ind : paretoFronts[i]) {
+                    if (ind.fitness == paretoFronts[i][j].fitness) {
+                        identicalFitnessIndividuals.push_back(ind);
+                    }
+                }
+                // remove the identical fitness individuals from the pareto front
+                std::vector<Individual> counterfactualParetoFront = evoHelper.without(paretoFronts[i], identicalFitnessIndividuals);
                 double counterfactualParetoHypervolume = evoHelper.getHypervolume(counterfactualParetoFront, lowerBound);
-                // team-level different evaluation: hypervolume with and without the team
-                paretoFronts[i][j].differenceEvaluations = std::vector<double>(paretoFronts[i][j].getAgents().size(), paretoHypervolume-counterfactualParetoHypervolume);
+                // team-level different evaluation: hypervolume with and without the identical fitness teams divided by number of idetical teams
+                paretoFronts[i][j].differenceEvaluations = std::vector<double>(paretoFronts[i][j].getAgents().size(), (paretoHypervolume-counterfactualParetoHypervolume)/identicalFitnessIndividuals.size());
+                
                 population.push_back(paretoFronts[i][j]); // push the evaluated elite back into the population
             }
         }
