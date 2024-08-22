@@ -97,26 +97,56 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
 
         // 2. Update agent-level difference impact/reward for each solution on the above pareto fronts
         // #pragma omp parallel for
-        for (int i = 0; i < paretoFronts.size(); ++i) {
-            double paretoHypervolume = evoHelper.getHypervolume(paretoFronts[i], lowerBound);
-            for (int j = 0; j < paretoFronts[i].size(); ++j) {
-                std::vector<Individual> identicalFitnessIndividuals;
-                // loop through the pareto front and find identical fitness individuals
-                for (const auto ind : paretoFronts[i]) {
-                    if (ind.fitness == paretoFronts[i][j].fitness) {
-                        identicalFitnessIndividuals.push_back(ind);
-                    }
-                }
-                // remove the identical fitness individuals from the pareto front
-                std::vector<Individual> counterfactualParetoFront = evoHelper.without(paretoFronts[i], identicalFitnessIndividuals);
-                double counterfactualParetoHypervolume = evoHelper.getHypervolume(counterfactualParetoFront, lowerBound);
-                // team-level different evaluation: hypervolume with and without the identical fitness teams divided by number of idetical teams
-                paretoFronts[i][j].differenceEvaluations = std::vector<double>(paretoFronts[i][j].getAgents().size(), (paretoHypervolume-counterfactualParetoHypervolume)/identicalFitnessIndividuals.size());
+        try
+        {
+            for (int i = 0; i < paretoFronts.size(); ++i) {
+                std::cout << "Processing Pareto front " << i << " with size " << paretoFronts[i].size() << std::endl;
                 
-                population.push_back(paretoFronts[i][j]); // push the evaluated elite back into the population
+                if (paretoFronts[i].empty()) {
+                    std::cout << "Warning: Empty Pareto front at index " << i << std::endl;
+                    continue;
+                }
+
+                double paretoHypervolume = evoHelper.getHypervolume(paretoFronts[i], lowerBound);
+                std::cout << "Pareto hypervolume: " << paretoHypervolume << std::endl;
+
+                for (int j = 0; j < paretoFronts[i].size(); ++j) {
+                    // remove the identical fitness individuals from the pareto front
+                    std::vector<Individual> counterfactualParetoFront = evoHelper.without(paretoFronts[i], {paretoFronts[i][j]});
+                    if (counterfactualParetoFront.empty()) {
+                        std::cout << "Warning: Counterfactual Pareto front is empty for individual " << j << std::endl;
+                        continue;
+                    }
+
+                    double counterfactualParetoHypervolume = evoHelper.getHypervolume(counterfactualParetoFront, lowerBound);
+                    std::cout << "Counterfactual Pareto hypervolume: " << counterfactualParetoHypervolume << std::endl;
+
+                    size_t agentSize = paretoFronts[i][j].getAgents().size();
+                    if (agentSize == 0) {
+                        std::cout << "Warning: Agent size is 0 for individual " << j << " in Pareto front " << i << std::endl;
+                        continue;
+                    }
+
+                    // team-level different evaluation: hypervolume with and without the identical fitness teams divided by number of identical teams
+                    double diffEval = (paretoHypervolume - counterfactualParetoHypervolume);
+                    paretoFronts[i][j].differenceEvaluations = std::vector<double>(agentSize, diffEval);
+                    
+                    std::cout << "Difference evaluation for individual " << j << ": " << diffEval << std::endl;
+
+                    population.push_back(paretoFronts[i][j]); // push the evaluated elite back into the population
+                    std::cout << "Added individual " << j << " from Pareto front " << i << " to population" << std::endl;
+                }
             }
+            
         }
-        std::cout<<"difference evaluations complete"<<std::endl;
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+            std::cerr << "population size: " << population.size() << "\n";
+            
+        }
+        
+        std::cout << "Difference evaluations complete" << std::endl;
 
         // for (auto ind : population) {
         //     auto de = ind.differenceEvaluations;
