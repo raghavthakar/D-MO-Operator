@@ -40,45 +40,11 @@ Agent::Agent(const Agent& other) : posX(other.posX), posY(other.posY), maxStepSi
 
 // Function to move the agent by dx, dy (within maximum step size)
 void Agent::move(std::pair<double, double> delta, Environment environment) {
-    int environmentXLength = environment.getDimensions().first;
-    int environmentYLength = environment.getDimensions().second;
-
-    double dx = delta.first  ;
-    double dy = delta.second ;
-
-    // dx, dy are between -1 and 1. max step here is sqrt(2), which should corresond to step of maxStepSize
-
-
-    double scaleFactor = maxStepSize / sqrt(2);
-    dx *= scaleFactor;
-    dy *= scaleFactor;
-
-    // Calculate the new position within environment limits
-    double step_slope = dy / dx;
-
-    if (posX + dx > environmentXLength){
-        dx = environmentXLength - posX;
-        dy = dx * step_slope;
-        step_slope = dy / dx;;
-    } else if (posX + dx < 0) {
-        dx = -posX;
-        dy = dx * step_slope;
-        step_slope = dy / dx;;
-    }
-
-    if (posY + dy > environmentYLength){
-        dy = environmentYLength - posY;
-        dx = dy /step_slope;
-        step_slope = dy / dx;;
-    } else if (posY + dy < 0) {
-        dy = -posY;
-        dx = dy / step_slope;
-        step_slope = dy / dx;;
-    }
+    std::pair<double, double> newPosition = environment.moveAgent(std::make_pair(posX, posY), delta, this->maxStepSize);
 
     // Update the agent's position
-    posX += dx;
-    posY += dy;
+    posX = newPosition.first;
+    posY = newPosition.second;
 }
 
 // Function to set the agent at the starting position and clear its observations
@@ -94,112 +60,8 @@ void Agent::addNoiseToPolicy() {
 
 // Observe and create state vector
 // Assumes that POIs have classID 0, 1, 2....
-std::vector<double> Agent::observe(Environment environment, std::vector<Agent> agents) {
-    std::vector<double> observations; // To store the observations the agent makes
-
-    observations.push_back(posX);
-    observations.push_back(posY);
-
-    // Get the POI observations
-    // Determine the number of unique class IDs
-    std::unordered_set<int> uniqueClassIds;
-    for(const auto& poi : environment.getPOIs()) {
-        uniqueClassIds.insert(poi.classId);
-    }
-    int numberOfPOIClasses = uniqueClassIds.size();
-
-    int* POIObservations = new int[numberOfPOIClasses * numberOfSensors]; // Store POI observations excusively
-    // Initialize all elements to zero
-    for (int i = 0; i < numberOfPOIClasses * numberOfSensors; ++i) {
-        POIObservations[i] = 0;
-    }
-
-    for(auto& poi : environment.getPOIs()) {
-        // Calculate the angle between the central point and point of interest
-        double dx = poi.x - posX;
-        double dy = poi.y - posY;
-        double angle = atan2(dy, dx) * 180 / M_PI; // Convert to degrees
-        double distance = sqrt(dx * dx + dy * dy);
-
-        // Normalize the angle to be in the range [0, 360)
-        if (angle < 0) {
-            angle += 360;
-        }
-
-        // Calculate the angle between each cone boundary
-        double coneAngle = 360.0 / numberOfSensors;
-
-        // Check which cone the point lies inside
-        for (int i = 0; i < numberOfSensors; ++i) {
-            double coneStart = i * coneAngle;
-            double coneEnd = (i + 1) * coneAngle;
-            
-            // Adjust for negative angles
-            coneStart = (coneStart < 0) ? coneStart + 360 : coneStart;
-            coneEnd = (coneEnd < 0) ? coneEnd + 360 : coneEnd;
-            
-            // Check if the angle falls within the current cone
-            if (coneStart <= angle && angle <= coneEnd && distance <= observationRadius) {
-                POIObservations[poi.classId * numberOfSensors + i]++; // Incremenet obs at cone index
-            }
-        }
-    }
-
-    int* agentObservations = new int[numberOfSensors]; // Store the other agents observations
-    // Initialize all elements to zero
-    for (int i = 0; i < numberOfSensors; ++i) {
-        agentObservations[i] = 0;
-    }
-
-    for (auto& agent : agents) {
-        // Calculate the angle between the central point and point of interest
-        double dx = agent.getPosition().first - posX;
-        double dy = agent.getPosition().second - posY;
-
-        // Do not process the same agent in the observation
-        if (dx == 0 && dy == 0)
-            continue;
-        
-        double angle = atan2(dy, dx) * 180 / M_PI; // Convert to degrees
-        double distance = sqrt(dx * dx + dy * dy);
-
-        // Normalize the angle to be in the range [0, 360)
-        if (angle < 0) {
-            angle += 360;
-        }
-
-        // Calculate the angle between each cone boundary
-        double coneAngle = 360.0 / numberOfSensors;
-
-        // Check which cone the point lies inside
-        for (int i = 0; i < numberOfSensors; ++i) {
-            double coneStart = i * coneAngle;
-            double coneEnd = (i + 1) * coneAngle;
-            
-            // Adjust for negative angles
-            coneStart = (coneStart < 0) ? coneStart + 360 : coneStart;
-            coneEnd = (coneEnd < 0) ? coneEnd + 360 : coneEnd;
-            
-            // Check if the angle falls within the current cone
-            if (coneStart <= angle && angle <= coneEnd && distance <= observationRadius) {
-                agentObservations[i]++; // Incremenet obs at cone index
-            }
-        }
-    }
-
-    // Append the POIObservations array to the observations vector
-    for (int i = 0; i < numberOfPOIClasses * numberOfSensors; ++i) {
-        observations.push_back(POIObservations[i]);
-    }
-    // Append the agentObservations array to the observations vector
-    for (int i = 0; i < numberOfSensors; ++i) {
-        observations.push_back(agentObservations[i]);
-    }
-    // Delete the dynamically allocated array to free memory
-    delete[] POIObservations;
-    delete[] agentObservations;
-    
-    return observations;
+std::vector<double> Agent::observe(Environment environment, std::vector<std::pair<double, double>> agentPositions) {
+    return environment.getAgentObservations(std::make_pair(posX, posY), this->numberOfSensors, this->observationRadius, agentPositions);
 }
 
 // Function to get the current position of the agent
@@ -323,7 +185,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         // Get the observation for each agent and feed it to its network to get the move
         std::vector<std::pair<double, double>> agentDeltas;
         for (auto& agent : agents) {
-            agentDeltas.push_back(agent.policy.forward(agent.observe(environment, agents)));
+            agentDeltas.push_back(agent.policy.forward(agent.observe(environment, agentPositions)));
         }
 
         // Move each agent according to its delta

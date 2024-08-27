@@ -34,7 +34,7 @@ public:
     void set(int startingX, int startingY);
 
     // Observe and create state vector
-    std::vector<double> observe(Environment environment, std::vector<Agent> agents);
+    std::vector<double> observe(Environment environment, std::vector<std::pair<double, double>> agentPositions);
 
     // Function to get the current position of the agent
     std::pair<double, double> getPosition() const;

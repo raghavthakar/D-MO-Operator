@@ -22,7 +22,8 @@ include_directories(include)
 include_directories("libtorch/include")
 
 # Source files
-set(SOURCES 
+set(SOURCES
+    src/MOREPDomain.cpp
     src/environment.cpp
     src/policy.cpp
     src/team.cpp
