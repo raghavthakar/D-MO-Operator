@@ -25,7 +25,7 @@ std::vector<Environment> EvolutionaryUtils::generateTestEnvironments
     YAML::Node config = YAML::LoadFile(filename);
 
     int numberOfEnvironments = config["evolutionary"]["numberOfEpisodes"].as<int>();
-    bool differentEnvs = config["environment"]["differentEnvs"].as<bool>();
+    bool differentEnvs = config["MOREPDomain"]["differentEnvs"].as<bool>();
 
     std::vector<Environment> testEnvironments;
     
@@ -353,7 +353,7 @@ Individual::Individual(const std::string& filename, int id) : team(filename, id)
     YAML::Node config = YAML::LoadFile(filename);
 
     // Initialise the fitness of the individual as NONE
-    int numberOfObjectives = config["environment"]["numberOfClassIds"].as<int>();
+    int numberOfObjectives = config["MOREPDomain"]["numberOfClassIds"].as<int>();
     for(int i = 0; i < numberOfObjectives; i++) {
         fitness.push_back(NONE);
     }
@@ -366,7 +366,7 @@ Individual::Individual(const std::string& filename, int id, std::vector<Agent> a
     YAML::Node config = YAML::LoadFile(filename);
 
     // Initialise the fitness of the individual as NONE
-    int numObjs = config["environment"]["numberOfClassIds"].as<int>();
+    int numObjs = config["MOREPDomain"]["numberOfClassIds"].as<int>();
     for(int i = 0; i < numObjs; i++) {
         fitness.push_back(NONE);
     }
