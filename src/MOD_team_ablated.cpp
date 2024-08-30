@@ -43,7 +43,7 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
     YAML::Node config = YAML::LoadFile(filename);
     const int lowerBound = config["team"]["numberOfAgents"].as<int>()
                                     * config["episode"]["length"].as<int>()
-                                    * config["environment"]["penalty"].as<int>()
+                                    * config["MOREPDomain"]["penalty"].as<int>()
                                     * config["evolutionary"]["numberOfEpisodes"].as<int>() - 1;
     
     // How many offsprings does the generation create?

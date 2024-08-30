@@ -1,4 +1,4 @@
-environment:
+MOREPDomain:
   differentEnvs: false # New env config every episode or not?
   numberOfPOIs: 8
   numberOfClassIds: 2

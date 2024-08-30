@@ -84,8 +84,8 @@ Team::Team(const std::string& filename, int id) {
     for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
         int posX, posY;
         if (randomStartPosition == true) {
-            posX = rand() % config["environment"]["dimensions"]["xLength"].as<int>();
-            posY = rand() % config["environment"]["dimensions"]["yLength"].as<int>();
+            posX = rand() % config["MOREPDomain"]["dimensions"]["xLength"].as<int>();
+            posY = rand() % config["MOREPDomain"]["dimensions"]["yLength"].as<int>();
         }
         else {
             posX = config["agent"]["startingX"].as<int>();
@@ -94,7 +94,7 @@ Team::Team(const std::string& filename, int id) {
         agents.emplace_back(posX, posY, agent_config["maxStepSize"].as<int>(),
             agent_config["observationRadius"].as<double>(),
             agent_config["numberOfSensors"].as<int>(),
-            config["environment"]["numberOfClassIds"].as<int>(),
+            config["MOREPDomain"]["numberOfClassIds"].as<int>(),
             agent_config["nnWeightMin"].as<double>(),
             agent_config["nnWeightMax"].as<double>(),
             agent_config["noiseMean"].as<double>(),
@@ -220,7 +220,7 @@ std::vector<std::vector<int>> Team::replayWithCounterfactual(const std::string& 
         workingTeamTrajectory = this->teamTrajectory;
 
         // Loop through the working trajectory, replacing the agent position at that timestep with position from counterfactual trajectory
-        std::vector<int> episodeCounterfactualRewards(config["environment"]["numberOfClassIds"].as<int>(), 0); // Sum of timestep rewards 
+        std::vector<int> episodeCounterfactualRewards(config["MOREPDomain"]["numberOfClassIds"].as<int>(), 0); // Sum of timestep rewards 
         for(int timestep = 0; timestep < workingTeamTrajectory.size(); timestep++) {
             workingTeamTrajectory[timestep][agentNum] = counterfactualTrajectory[timestep]; // repalce the agent's position with counterfactual
             std::vector<int> timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
