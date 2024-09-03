@@ -36,8 +36,11 @@ public:
 
 class EvolutionaryUtils {
     int x;
+    double softmaxTemperature;
+    double temperatureDecayFactor;
 public:
     EvolutionaryUtils();
+    EvolutionaryUtils(const std::string& config_filename);
     std::vector<Environment> generateTestEnvironments(const std::string& filename);
     Individual binaryTournament(std::vector<std::vector<Individual>> paretoFronts, size_t pSize);
     std::vector<Agent> crossover(Individual parent1, Individual parent2);

@@ -14,9 +14,16 @@
 
 const int NONE = std::numeric_limits<int>::min();
 
-// constructor
 EvolutionaryUtils::EvolutionaryUtils() {
     x=2;
+}
+
+// constructor
+EvolutionaryUtils::EvolutionaryUtils(const std::string& config_filename) {
+    x=2;
+    YAML::Node config = YAML::LoadFile(config_filename);
+    this->softmaxTemperature = config["evolutionary"]["softmaxTemperature"].as<double>();
+    this->temperatureDecayFactor = config["evolutionary"]["temperatureDecayFactor"].as<double>();
 }
 
 // DECIDE and Generate as many environment configurations as numberOfEpisodes
@@ -321,7 +328,39 @@ int EvolutionaryUtils::rouletteWheelSelection(std::vector<double> probabilities)
         std::cout<<x<<" ";
     }
 
-    std::cout<<"Softmax failed";
+    std::cout<<"Roulette Wheel failed";
+    exit(1);
+}
+
+// Select an element from a row using roulette wheel selection
+int EvolutionaryUtils::softmaxSelection(std::vector<double> probabilities) {
+    std::random_device rd; // Obtain a random number from hardware
+    std::mt19937 gen(rd()); // Seed the random number engine with rd
+
+    // Apply softmax with temperature
+    double sumOfExponents = 0.0;
+    std::vector<double> expValues(probabilities.size());
+
+    for (int i = 0; i < probabilities.size(); ++i) {
+        expValues[i] = std::exp(probabilities[i] / this->softmaxTemperature);
+        sumOfExponents += expValues[i];
+    }
+
+    // Normalize the exponentiated values to form a probability distribution
+    for (int i = 0; i < expValues.size(); ++i) {
+        expValues[i] /= sumOfExponents;
+    }
+
+    // sample according to the computed probabilities
+    std::discrete_distribution<std::size_t> d{expValues.begin(), expValues.end()};
+
+    // decay the softmax temperature
+    this->softmaxTemperature *= this->temperatureDecayFactor;
+
+    // return the samples/selected index
+    return d(gen);
+
+    std::cout << "Softmax selection failed" << std::endl;
     exit(1);
 }
 
