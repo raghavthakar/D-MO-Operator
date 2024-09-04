@@ -38,6 +38,8 @@ class EvolutionaryUtils {
     int x;
     double softmaxTemperature;
     double temperatureDecayFactor;
+    double epsilon;
+    double epsilonDecayFactor;
 public:
     EvolutionaryUtils();
     EvolutionaryUtils(const std::string& config_filename);
@@ -51,7 +53,8 @@ public:
     std::vector<Individual> without(const std::vector<Individual> workingPopulation, const std::vector<Individual> toRemoveSolutions);
     std::vector<Individual> cull(const std::vector<Individual> PF, const int desiredSize);
     int softmaxSelection(std::vector<double> values);
-    int rouletteWheelSelection(std::vector<double> probabilities);
+    int rouletteWheelSelection(std::vector<double> values);
+    int epsilonGreedySelection(std::vector<double> values);
     std::vector<std::vector<double>> transpose(std::vector<std::vector<double>> matrix);
     std::vector<double> getColumn(std::vector<std::vector<double>> matrix, int colNum);
 };

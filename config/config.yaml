@@ -142,8 +142,10 @@ evolutionary:
   numberOfOffsprings: 100 # How many offsprings does the population create in every generation?
   numberOfParents: 100 # How many individuals are used to make these offsprings?
   counterfactualType: "static" # Counterfactial agent simply stays in the start position throughout
-  softmaxTemperature: 1.0
-  temperatureDecayFactor: 0.995
+  softmaxTemperature: 1.0 # Starting temperature for softmax seelction
+  temperatureDecayFactor: 0.995 # Decay factor of the temperature
+  epsilon: 0.10
+  epsilonDecayFactor: 1.0
 # --------------------------------------
 
 experiment:

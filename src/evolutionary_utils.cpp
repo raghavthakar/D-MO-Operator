@@ -24,6 +24,9 @@ EvolutionaryUtils::EvolutionaryUtils(const std::string& config_filename) {
     YAML::Node config = YAML::LoadFile(config_filename);
     this->softmaxTemperature = config["evolutionary"]["softmaxTemperature"].as<double>();
     this->temperatureDecayFactor = config["evolutionary"]["temperatureDecayFactor"].as<double>();
+
+    this->epsilon = config["evolutionary"]["epsilon"].as<double>();
+    this->epsilonDecayFactor = config["evolutionary"]["epsilonDecayFactor"].as<double>();
 }
 
 // DECIDE and Generate as many environment configurations as numberOfEpisodes
@@ -332,7 +335,7 @@ int EvolutionaryUtils::rouletteWheelSelection(std::vector<double> probabilities)
     exit(1);
 }
 
-// Select an element from a row using roulette wheel selection
+// Select an element from a row using softmax selection
 int EvolutionaryUtils::softmaxSelection(std::vector<double> probabilities) {
     std::random_device rd; // Obtain a random number from hardware
     std::mt19937 gen(rd()); // Seed the random number engine with rd
@@ -362,6 +365,33 @@ int EvolutionaryUtils::softmaxSelection(std::vector<double> probabilities) {
 
     std::cout << "Softmax selection failed" << std::endl;
     exit(1);
+}
+
+// Select an element from a row using softmax selection
+int EvolutionaryUtils::epsilonGreedySelection(std::vector<double> values) {
+    // epsilon is the probability with which to explore
+
+    // Generate a random number between 0 and 1
+    std::random_device device;
+    std::mt19937 generator(device());
+    std::uniform_real_distribution<double> distribution(0.0, 1.0);
+    
+    int sampled_index;
+
+    // Sample a random value if the random value is less than epsilon
+    if (distribution(generator) < this->epsilon) {
+        // Random sampling: Choose any index uniformly at random
+        std::uniform_int_distribution<int> index_distribution(0, values.size() - 1);
+        sampled_index = index_distribution(generator);
+    } else {
+        // Greedy selection: Choose the index of the largest value
+        sampled_index = std::distance(values.begin(), std::max_element(values.begin(), values.end()));
+    }
+
+    // decay epsilon
+    this->epsilon *= this->epsilonDecayFactor;
+    
+    return sampled_index;
 }
 
 // return the transpose of a mtrix
