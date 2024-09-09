@@ -3,6 +3,7 @@
 
 #include "environment.h"
 #include "policy.h"
+#include "MOREPBaseAgent.h"
 #include <vector>
 #include <string>
 #include <cmath>
@@ -10,19 +11,7 @@
 
 class Agent {
 public:
-    double posX; // X-coordinate of the agent's position
-    double posY; // Y-coordinate of the agent's position
-    double maxStepSize; // Maximum step size the agent can take
-    double observationRadius; // How far can the agent see around it?
-    int numberOfSensors; // How many sensors are around the agent
-    double nnWeightMin; // Max and min weights of the policy weights
-    double nnWeightMax;
-    double noiseMean; // POlicy noise mutate's mean
-    double noiseStdDev; // Policy noise mutate's stddev
-
-    // Policy object that stores the agent's neural network
-    Policy policy;
-
+    MOREPBaseAgent rover;
     // Constructor
     Agent(double x, double y, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds, double nnWeightMin, double nnWeightMax, double noiseMean, double noiseStdDev);
     Agent(const Agent& other);

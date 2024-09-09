@@ -26,51 +26,43 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 
 // Constructor
 Agent::Agent(double x, double y, double _maxStepSize, double _observationRadius, 
-    int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double _noiseMean, double _noiseStdDev) : 
-    posX(x), posY(y), maxStepSize(_maxStepSize), 
-    observationRadius(_observationRadius), numberOfSensors(_numberOfSensors), noiseMean(_noiseMean),
-    noiseStdDev(_noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds) + _numberOfSensors, _nnWeightMin, _nnWeightMax)  {}
+    int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double _noiseMean, double _noiseStdDev) {
+        this->rover = MOREPBaseAgent(x, y, _maxStepSize, _observationRadius, _numberOfSensors, numberOfClassIds, _nnWeightMin, _nnWeightMax, _noiseMean, _noiseStdDev);
+    }
 
 // copy constructor
-Agent::Agent(const Agent& other) : posX(other.posX), posY(other.posY), maxStepSize(other.maxStepSize), 
-    observationRadius(other.observationRadius), numberOfSensors(other.numberOfSensors), nnWeightMin(other.nnWeightMin), 
-    nnWeightMax(other.nnWeightMax), noiseMean(other.noiseMean), noiseStdDev(other.noiseStdDev) {
-        this->policy = *std::make_shared<Policy>(other.policy);;
+Agent::Agent(const Agent& other) {
+    this->rover = MOREPBaseAgent(other.rover);
 }
 
 // Function to move the agent by dx, dy (within maximum step size)
 void Agent::move(std::pair<double, double> delta, Environment environment) {
-    std::pair<double, double> newPosition = environment.moveAgent(std::make_pair(posX, posY), delta, this->maxStepSize);
-
-    // Update the agent's position
-    posX = newPosition.first;
-    posY = newPosition.second;
+    this->rover.move(delta, environment);
 }
 
 // Function to set the agent at the starting position and clear its observations
 void Agent::set(int startingX, int startingY) {
-    posX = startingX;
-    posY = startingY;
+    this->rover.set(startingX, startingY); 
 }
 
 // Adds noise to the contained policy
 void Agent::addNoiseToPolicy() {
-    this->policy.addNoise(this->noiseMean, this->noiseStdDev);
+    this->rover.addNoiseToPolicy();
 }
 
 // Observe and create state vector
 // Assumes that POIs have classID 0, 1, 2....
 std::vector<double> Agent::observe(Environment environment, std::vector<std::pair<double, double>> agentPositions) {
-    return environment.getAgentObservations(std::make_pair(posX, posY), this->numberOfSensors, this->observationRadius, agentPositions);
+    return this->rover.observe(environment, agentPositions);
 }
 
 // Function to get the current position of the agent
 std::pair<double, double> Agent::getPosition() const {
-    return std::make_pair(posX, posY);
+    return this->rover.getPosition();
 }
 
 int Agent::getMaxStepSize() const {
-    return maxStepSize;
+    return this->rover.getMaxStepSize();
 }
 
 Team::Team(const std::string& filename, int id) {
@@ -185,7 +177,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         // Get the observation for each agent and feed it to its network to get the move
         std::vector<std::pair<double, double>> agentDeltas;
         for (auto& agent : agents) {
-            agentDeltas.push_back(agent.policy.forward(agent.observe(environment, agentPositions)));
+            agentDeltas.push_back(agent.rover.policy.forward(agent.observe(environment, agentPositions)));
         }
 
         // Move each agent according to its delta
