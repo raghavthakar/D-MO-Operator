@@ -3,6 +3,7 @@
 #include "policy.h"
 #include <vector>
 #include <unordered_set>
+#include <utility>
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -25,10 +26,23 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 // = operator
 
 // Constructor
-Agent::Agent(double x, double y, double _maxStepSize, double _observationRadius, 
-    int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double _noiseMean, double _noiseStdDev) {
-        this->rover = MOREPBaseAgent(x, y, _maxStepSize, _observationRadius, _numberOfSensors, numberOfClassIds, _nnWeightMin, _nnWeightMax, _noiseMean, _noiseStdDev);
-    }
+Agent::Agent(const std::string& config_filename) {
+    YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
+    const YAML::Node& agent_config = config["agent"]; // Agent config info
+
+    this->rover = MOREPBaseAgent(agent_config["startingX"].as<int>(),
+        agent_config["startingY"].as<int>(),
+        agent_config["startingX"].as<int>(),
+        agent_config["startingY"].as<int>(),
+        agent_config["maxStepSize"].as<int>(),
+        agent_config["observationRadius"].as<double>(),
+        agent_config["numberOfSensors"].as<int>(),
+        config["MOREPDomain"]["numberOfClassIds"].as<int>(),
+        agent_config["nnWeightMin"].as<double>(),
+        agent_config["nnWeightMax"].as<double>(),
+        agent_config["noiseMean"].as<double>(),
+        agent_config["noiseStdDev"].as<double>());
+}
 
 // copy constructor
 Agent::Agent(const Agent& other) {
@@ -36,13 +50,13 @@ Agent::Agent(const Agent& other) {
 }
 
 // Function to move the agent by dx, dy (within maximum step size)
-void Agent::move(std::pair<double, double> delta, Environment environment) {
-    this->rover.move(delta, environment);
+void Agent::move(std::vector<double> delta, Environment environment) {
+    this->rover.move(std::make_pair(delta[0], delta[1]), environment);
 }
 
 // Function to set the agent at the starting position and clear its observations
-void Agent::set(int startingX, int startingY) {
-    this->rover.set(startingX, startingY); 
+void Agent::reset() {
+    this->rover.reset(); 
 }
 
 // Adds noise to the contained policy
@@ -52,18 +66,33 @@ void Agent::addNoiseToPolicy() {
 
 // Observe and create state vector
 // Assumes that POIs have classID 0, 1, 2....
-std::vector<double> Agent::observe(Environment environment, std::vector<std::pair<double, double>> agentPositions) {
-    return this->rover.observe(environment, agentPositions);
+std::vector<double> Agent::observe(Environment environment, std::vector<std::vector<double>> agentPositions) {
+    // Convert std::vector<std::vector<double>> to std::vector<std::pair<double, double>>
+    std::vector<std::pair<double, double>> convertedPositions;
+    convertedPositions.reserve(agentPositions.size());
+
+    for (const auto& position : agentPositions) {
+        // Assuming each inner vector has exactly 2 elements
+        if (position.size() == 2) {
+            convertedPositions.emplace_back(position[0], position[1]);
+        } else {
+            throw std::runtime_error("Each position vector must have exactly 2 elements.");
+        }
+    }
+
+    return this->rover.observe(environment, convertedPositions);
 }
 
 // forward pass through the policy
-std::pair<double, double> Agent::forward(const std::vector<double>& input) {
-    return this->rover.forward(input);
+std::vector<double> Agent::forward(const std::vector<double>& input) {
+    auto output = this->rover.forward(input);
+    return {output.first, output.second};
 }
 
 // Function to get the current position of the agent
-std::pair<double, double> Agent::getPosition() const {
-    return this->rover.getPosition();
+std::vector<double> Agent::getPosition() const {
+    auto position = this->rover.getPosition();
+    return {position.first, position.second};
 }
 
 int Agent::getMaxStepSize() const {
@@ -79,23 +108,7 @@ Team::Team(const std::string& filename, int id) {
     bool randomStartPosition = agent_config["randomStartPosition"].as<bool>(); // Are the start pos random?
 
     for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
-        int posX, posY;
-        if (randomStartPosition == true) {
-            posX = rand() % config["MOREPDomain"]["dimensions"]["xLength"].as<int>();
-            posY = rand() % config["MOREPDomain"]["dimensions"]["yLength"].as<int>();
-        }
-        else {
-            posX = config["agent"]["startingX"].as<int>();
-            posY = config["agent"]["startingY"].as<int>();
-        }
-        agents.emplace_back(posX, posY, agent_config["maxStepSize"].as<int>(),
-            agent_config["observationRadius"].as<double>(),
-            agent_config["numberOfSensors"].as<int>(),
-            config["MOREPDomain"]["numberOfClassIds"].as<int>(),
-            agent_config["nnWeightMin"].as<double>(),
-            agent_config["nnWeightMax"].as<double>(),
-            agent_config["noiseMean"].as<double>(),
-            agent_config["noiseStdDev"].as<double>()); // Create agent object and store in vector
+        agents.emplace_back(filename); // Create agent object and store in vector
     }
 
     this->id = id; // Store the team id
@@ -121,8 +134,8 @@ Team::Team(const std::string& filename, std::vector<Agent> agents, int id) {
 void Team::printInfo() {
     std::cout<<"Team ID: "<<id<<std::endl;
     for (auto& agent : agents) {
-        std::cout<<"    Agent position: "<<agent.getPosition().first
-        <<","<<agent.getPosition().second<<std::endl;
+        std::cout<<"    Agent position: "<<agent.getPosition()[0]
+        <<","<<agent.getPosition()[1]<<std::endl;
     }
     std::cout<<"======="<<std::endl;
 }
@@ -154,7 +167,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         }
 
         // reset the agents at the starting positions and clear the observations
-        agent.set(startingX, startingY);
+        agent.reset();
     }
     
     // clear the teamTrajectory of the team
@@ -167,7 +180,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         // Display the current stae of all agents
         // printInfo();
         // Get the rewards for the current team configuration
-        std::vector<std::pair<double, double>> agentPositions;
+        std::vector<std::vector<double>> agentPositions;
         for (auto& agent : agents) {
             agentPositions.push_back(agent.getPosition());
         }
@@ -180,7 +193,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         // std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
 
         // Get the observation for each agent and feed it to its network to get the move
-        std::vector<std::pair<double, double>> agentDeltas;
+        std::vector<std::vector<double>> agentDeltas;
         for (auto& agent : agents) {
             agentDeltas.push_back(agent.forward(agent.observe(environment, agentPositions)));
         }
@@ -197,7 +210,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
 // re-evaluate the rewards for the team, given the counterfactual trajectory
 // TODO counterfactual evaluation find the rewards for that team
 std::vector<std::vector<int>> Team::replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType) {
-    std::vector<std::pair<double, double>> counterfactualTrajectory;
+    std::vector<std::vector<double>> counterfactualTrajectory;
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
 
     if (counterfactualType == "static") {
@@ -206,12 +219,12 @@ std::vector<std::vector<int>> Team::replayWithCounterfactual(const std::string& 
 
         // static counterfactual trajectory with length equal to the teamtrajectory
         for (int i=0; i<this->teamTrajectory.size(); i++) {
-            counterfactualTrajectory.push_back(std::make_pair(startingX, startingY));
+            counterfactualTrajectory.push_back({startingX, startingY});
         }
     }
 
     std::vector<std::vector<int>> replayRewardsWithCounterfactuals; // Stores the replay rewards with counterfactual replacements
-    std::vector<std::vector<std::pair<double, double>>> workingTeamTrajectory; // store the team trajectory copy to modify
+    std::vector<std::vector<std::vector<double>>> workingTeamTrajectory; // store the team trajectory copy to modify
     // for each agent, loop through the episode, get rewards for each timestep with counterfactial replacements
     for (int agentNum=0; agentNum<this->teamTrajectory[0].size(); agentNum++) { // loop through agents
         workingTeamTrajectory = this->teamTrajectory;

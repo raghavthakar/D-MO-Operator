@@ -13,23 +13,27 @@ class Agent {
 public:
     MOREPBaseAgent rover;
     // Constructor
-    Agent(double x, double y, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds, double nnWeightMin, double nnWeightMax, double noiseMean, double noiseStdDev);
+    Agent(const std::string& config_filename);
     Agent(const Agent& other);
 
     // Function to move the agent by dx, dy (within maximum step size)
-    void move(std::pair<double, double> delta, Environment environment);
+    void move(std::vector<double> delta, Environment environment);
 
     // Function to set the agent at the starting position and clear its observations
-    void set(int startingX, int startingY);
+    void reset();
 
     // Observe and create state vector
-    std::vector<double> observe(Environment environment, std::vector<std::pair<double, double>> agentPositions);
+    std::vector<double> observe(Environment environment, std::vector<std::vector<double>> agentPositions);
+
+    // forward pass through the policy
+    std::vector<double> forward(const std::vector<double>& input);
 
     // forward pass through the policy
     std::pair<double, double> forward(const std::vector<double>& input);
     
     // Function to get the current position of the agent
-    std::pair<double, double> getPosition() const;
+    std::vector<double> getPosition() const;
+
 
 
     // Function to get the maxStepSize of the agent
@@ -43,7 +47,7 @@ class Team {
 public:
     std::vector<Agent> agents; // Vector to store agents in team
     int id;
-    std::vector<std::vector<std::pair<double, double>>> teamTrajectory;
+    std::vector<std::vector<std::vector<double>>> teamTrajectory;
     Team();
     Team(const std::string& filename, int id); // Constructor
     Team(const std::string& filename, std::vector<Agent> agents, int id); // Constructor
