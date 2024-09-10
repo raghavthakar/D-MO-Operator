@@ -28,8 +28,12 @@ public:
     // forward pass through the policy
     std::vector<double> forward(const std::vector<double>& input);
 
+    // forward pass through the policy
+    std::pair<double, double> forward(const std::vector<double>& input);
+    
     // Function to get the current position of the agent
     std::vector<double> getPosition() const;
+
 
 
     // Function to get the maxStepSize of the agent

@@ -27,7 +27,6 @@ void MOREPBaseAgent::move(std::pair<double, double> delta, Environment environme
 }
 
 // Function to set the MOREPBaseAgent at the starting position and clear its observations
-// TODO: actually do something with posx and posy here.
 void MOREPBaseAgent::reset() {
     posX = this->startingX;
     posY = this->startingY;
