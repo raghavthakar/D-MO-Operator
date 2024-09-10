@@ -4,14 +4,14 @@ MOREPBaseAgent::MOREPBaseAgent() {
     int x = 2;
 }
 
-MOREPBaseAgent::MOREPBaseAgent(double x, double y, double _maxStepSize, double _observationRadius, 
+MOREPBaseAgent::MOREPBaseAgent(double x, double y, double startingX_, double startingY_, double _maxStepSize, double _observationRadius, 
     int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double _noiseMean, double _noiseStdDev) : 
-    posX(x), posY(y), maxStepSize(_maxStepSize), 
+    posX(x), posY(y), startingX(startingX_), startingY(startingY_), maxStepSize(_maxStepSize), 
     observationRadius(_observationRadius), numberOfSensors(_numberOfSensors), noiseMean(_noiseMean),
     noiseStdDev(_noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds) + _numberOfSensors, _nnWeightMin, _nnWeightMax)  {}
 
 // copy constructor
-MOREPBaseAgent::MOREPBaseAgent(const MOREPBaseAgent& other) : posX(other.posX), posY(other.posY), maxStepSize(other.maxStepSize), 
+MOREPBaseAgent::MOREPBaseAgent(const MOREPBaseAgent& other) : posX(other.posX), posY(other.posY), startingX(other.startingX), startingY(other.startingY), maxStepSize(other.maxStepSize), 
     observationRadius(other.observationRadius), numberOfSensors(other.numberOfSensors), nnWeightMin(other.nnWeightMin), 
     nnWeightMax(other.nnWeightMax), noiseMean(other.noiseMean), noiseStdDev(other.noiseStdDev) {
         this->policy = *std::make_shared<Policy>(other.policy);;
@@ -29,8 +29,8 @@ void MOREPBaseAgent::move(std::pair<double, double> delta, Environment environme
 // Function to set the MOREPBaseAgent at the starting position and clear its observations
 // TODO: actually do something with posx and posy here.
 void MOREPBaseAgent::reset() {
-    posX = 2;
-    posY = 2;
+    posX = this->startingX;
+    posY = this->startingY;
 }
 
 // forward pass through the policy

@@ -31,7 +31,9 @@ Agent::Agent(const std::string& config_filename) {
     const YAML::Node& agent_config = config["agent"]; // Agent config info
 
     this->rover = MOREPBaseAgent(agent_config["startingX"].as<int>(),
+        agent_config["startingY"].as<int>(),
         agent_config["startingX"].as<int>(),
+        agent_config["startingY"].as<int>(),
         agent_config["maxStepSize"].as<int>(),
         agent_config["observationRadius"].as<double>(),
         agent_config["numberOfSensors"].as<int>(),

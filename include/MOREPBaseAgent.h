@@ -10,6 +10,8 @@ class MOREPBaseAgent {
 public:
     double posX; // X-coordinate of the MOREPBaseAgent's position
     double posY; // Y-coordinate of the MOREPBaseAgent's position
+    double startingX; // starting coordinate
+    double startingY; // starting coordinate
     double maxStepSize; // Maximum step size the MOREPBaseAgent can take
     double observationRadius; // How far can the MOREPBaseAgent see around it?
     int numberOfSensors; // How many sensors are around the MOREPBaseAgent
@@ -23,7 +25,7 @@ public:
 
     // Constructor
     MOREPBaseAgent();
-    MOREPBaseAgent(double x, double y, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds, double nnWeightMin, double nnWeightMax, double noiseMean, double noiseStdDev);
+    MOREPBaseAgent(double x, double y, double startingX, double startingY, double maxStepSize, double observationRadius, int numberOfSensors, int numberOfClassIds, double nnWeightMin, double nnWeightMax, double noiseMean, double noiseStdDev);
     MOREPBaseAgent(const MOREPBaseAgent& other);
 
     // Function to move the MOREPBaseAgent by dx, dy (within maximum step size)
