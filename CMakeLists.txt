@@ -23,6 +23,7 @@ include_directories("libtorch/include")
 
 # Source files
 set(SOURCES
+    src/MOREPBaseAgent.cpp
     src/MOREPDomain.cpp
     src/environment.cpp
     src/policy.cpp
