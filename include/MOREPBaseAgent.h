@@ -30,7 +30,7 @@ public:
     void move(std::pair<double, double> delta, Environment environment);
 
     // Function to set the MOREPBaseAgent at the starting position and clear its observations
-    void set(int startingX, int startingY);
+    void reset();
 
     // Observe and create state vector
     std::vector<double> observe(Environment environment, std::vector<std::pair<double, double>> agentPositions);

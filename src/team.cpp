@@ -3,6 +3,7 @@
 #include "policy.h"
 #include <vector>
 #include <unordered_set>
+#include <utility>
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -25,9 +26,20 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 // = operator
 
 // Constructor
-Agent::Agent(double x, double y, double _maxStepSize, double _observationRadius, 
-    int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double _noiseMean, double _noiseStdDev) {
-        this->rover = MOREPBaseAgent(x, y, _maxStepSize, _observationRadius, _numberOfSensors, numberOfClassIds, _nnWeightMin, _nnWeightMax, _noiseMean, _noiseStdDev);
+Agent::Agent(const std::string& config_filename) {
+    YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
+    const YAML::Node& agent_config = config["agent"]; // Agent config info
+
+    this->rover = MOREPBaseAgent(agent_config["startingX"].as<int>(),
+        agent_config["startingX"].as<int>(),
+        agent_config["maxStepSize"].as<int>(),
+        agent_config["observationRadius"].as<double>(),
+        agent_config["numberOfSensors"].as<int>(),
+        config["MOREPDomain"]["numberOfClassIds"].as<int>(),
+        agent_config["nnWeightMin"].as<double>(),
+        agent_config["nnWeightMax"].as<double>(),
+        agent_config["noiseMean"].as<double>(),
+        agent_config["noiseStdDev"].as<double>());
 }
 
 // copy constructor
@@ -36,13 +48,13 @@ Agent::Agent(const Agent& other) {
 }
 
 // Function to move the agent by dx, dy (within maximum step size)
-void Agent::move(std::pair<double, double> delta, Environment environment) {
-    this->rover.move(delta, environment);
+void Agent::move(std::vector<double> delta, Environment environment) {
+    this->rover.move(std::make_pair(delta[0], delta[1]), environment);
 }
 
 // Function to set the agent at the starting position and clear its observations
-void Agent::set(int startingX, int startingY) {
-    this->rover.set(startingX, startingY); 
+void Agent::reset() {
+    this->rover.reset(); 
 }
 
 // Adds noise to the contained policy
@@ -70,8 +82,9 @@ std::vector<double> Agent::observe(Environment environment, std::vector<std::vec
 }
 
 // forward pass through the policy
-std::pair<double, double> Agent::forward(const std::vector<double>& input) {
-    return this->rover.forward(input);
+std::vector<double> Agent::forward(const std::vector<double>& input) {
+    auto output = this->rover.forward(input);
+    return {output.first, output.second};
 }
 
 // Function to get the current position of the agent
@@ -93,23 +106,7 @@ Team::Team(const std::string& filename, int id) {
     bool randomStartPosition = agent_config["randomStartPosition"].as<bool>(); // Are the start pos random?
 
     for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
-        int posX, posY;
-        if (randomStartPosition == true) {
-            posX = rand() % config["MOREPDomain"]["dimensions"]["xLength"].as<int>();
-            posY = rand() % config["MOREPDomain"]["dimensions"]["yLength"].as<int>();
-        }
-        else {
-            posX = config["agent"]["startingX"].as<int>();
-            posY = config["agent"]["startingY"].as<int>();
-        }
-        agents.emplace_back(posX, posY, agent_config["maxStepSize"].as<int>(),
-            agent_config["observationRadius"].as<double>(),
-            agent_config["numberOfSensors"].as<int>(),
-            config["MOREPDomain"]["numberOfClassIds"].as<int>(),
-            agent_config["nnWeightMin"].as<double>(),
-            agent_config["nnWeightMax"].as<double>(),
-            agent_config["noiseMean"].as<double>(),
-            agent_config["noiseStdDev"].as<double>()); // Create agent object and store in vector
+        agents.emplace_back(filename); // Create agent object and store in vector
     }
 
     this->id = id; // Store the team id
@@ -168,7 +165,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         }
 
         // reset the agents at the starting positions and clear the observations
-        agent.set(startingX, startingY);
+        agent.reset();
     }
     
     // clear the teamTrajectory of the team
@@ -194,7 +191,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         // std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
 
         // Get the observation for each agent and feed it to its network to get the move
-        std::vector<std::pair<double, double>> agentDeltas;
+        std::vector<std::vector<double>> agentDeltas;
         for (auto& agent : agents) {
             agentDeltas.push_back(agent.forward(agent.observe(environment, agentPositions)));
         }
