@@ -32,6 +32,11 @@ void MOREPBaseAgent::set(int startingX, int startingY) {
     posY = startingY;
 }
 
+// forward pass through the policy
+std::pair<double, double> MOREPBaseAgent::forward(const std::vector<double>& input) {
+    return policy.forward(input);
+}
+
 // Adds noise to the contained policy
 void MOREPBaseAgent::addNoiseToPolicy() {
     this->policy.addNoise(this->noiseMean, this->noiseStdDev);

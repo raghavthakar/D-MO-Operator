@@ -38,6 +38,9 @@ public:
     // Function to get the current position of the MOREPBaseAgent
     std::pair<double, double> getPosition() const;
 
+    // forward pass through the policy
+    std::pair<double, double> forward(const std::vector<double>& input);
+
     // Function to get the maxStepSize of the MOREPBaseAgent
     int getMaxStepSize() const;
 

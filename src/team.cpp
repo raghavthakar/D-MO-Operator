@@ -56,6 +56,11 @@ std::vector<double> Agent::observe(Environment environment, std::vector<std::pai
     return this->rover.observe(environment, agentPositions);
 }
 
+// forward pass through the policy
+std::pair<double, double> Agent::forward(const std::vector<double>& input) {
+    return this->rover.forward(input);
+}
+
 // Function to get the current position of the agent
 std::pair<double, double> Agent::getPosition() const {
     return this->rover.getPosition();
@@ -177,7 +182,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
         // Get the observation for each agent and feed it to its network to get the move
         std::vector<std::pair<double, double>> agentDeltas;
         for (auto& agent : agents) {
-            agentDeltas.push_back(agent.rover.policy.forward(agent.observe(environment, agentPositions)));
+            agentDeltas.push_back(agent.forward(agent.observe(environment, agentPositions)));
         }
 
         // Move each agent according to its delta

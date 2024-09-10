@@ -25,8 +25,12 @@ public:
     // Observe and create state vector
     std::vector<double> observe(Environment environment, std::vector<std::pair<double, double>> agentPositions);
 
+    // forward pass through the policy
+    std::pair<double, double> forward(const std::vector<double>& input);
+    
     // Function to get the current position of the agent
     std::pair<double, double> getPosition() const;
+
 
     // Function to get the maxStepSize of the agent
     int getMaxStepSize() const;
