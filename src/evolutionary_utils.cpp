@@ -550,7 +550,7 @@ std::string Individual::getTeamTrajectoryAsString() {
     for (int i=0; i<this->team.teamTrajectory[0].size(); i++) {
         output << "[";
         for (int j=0; j < team.teamTrajectory.size(); j++) {
-            output << "(" << team.teamTrajectory[j][i].first << "," << team.teamTrajectory[j][i].second << "), ";
+            output << "(" << team.teamTrajectory[j][i][0] << "," << team.teamTrajectory[j][i][1] << "), ";
         }
         output << "],";
     }

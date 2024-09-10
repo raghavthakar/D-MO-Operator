@@ -150,4 +150,5 @@ evolutionary:
 
 experiment:
   genLogInterval: 25 # Log info about algo every how many generations?
+  domain: "MOREPDomain"
 # --------------------------------------
