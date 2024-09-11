@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
     // Extract filename from command-line arguments
     std::string project_root = "/home/thakarr/D-MO-Operator/";
     std::string config_filename = project_root + "config/config.yaml";
-    std::string data_filename_root = project_root + "experiments/data/complete_agentsplit_data/"; // Default data filename with current date and time
+    std::string data_filename_root = project_root + "experiments/data/env_split_data/"; // Default data filename with current date and time
 
     // Start the timer
     auto start = std::chrono::steady_clock::now();
