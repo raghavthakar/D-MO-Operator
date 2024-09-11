@@ -174,6 +174,54 @@ std::vector<int> MOREPDomain::getRewards(std::vector<std::pair<double, double>> 
     return rewardVector;
 }
 
+// take in an agent's position and return new position based on environmental limits
+std::pair<double, double> MOREPDomain::moveAgent(std::pair<double, double> currentPos, std::pair<double, double> delta, double maxStepSize) {
+    int environmentXLength = this->getDimensions().first;
+    int environmentYLength = this->getDimensions().second;
+
+    double posX = currentPos.first;
+    double posY = currentPos.second;
+
+    double dx = delta.first  ;
+    double dy = delta.second ;
+
+    // dx, dy are between -1 and 1. max step here is sqrt(2), which should corresond to step of maxStepSize
+
+    double scaleFactor = maxStepSize / sqrt(2);
+    dx *= scaleFactor;
+    dy *= scaleFactor;
+
+    // Calculate the new position within environment limits
+    double step_slope = dy / dx;
+
+    if (posX + dx > environmentXLength){
+        dx = environmentXLength - posX;
+        dy = dx * step_slope;
+        step_slope = dy / dx;;
+    } else if (posX + dx < 0) {
+        dx = -posX;
+        dy = dx * step_slope;
+        step_slope = dy / dx;;
+    }
+
+    if (posY + dy > environmentYLength){
+        dy = environmentYLength - posY;
+        dx = dy /step_slope;
+        step_slope = dy / dx;;
+    } else if (posY + dy < 0) {
+        dy = -posY;
+        dx = dy / step_slope;
+        step_slope = dy / dx;;
+    }
+
+    // Update the agent's position
+    posX += dx;
+    posY += dy;
+
+    // return the updated position
+    return std::make_pair(posX, posY);
+}
+
 // observations of an agent
 std::vector<double> MOREPDomain::getAgentObservations(std::pair<double, double> agentPos, int numberOfSensors, double observationRadius, std::vector<std::pair<double, double>> agentPositions) {
     std::vector<double> observations; // To store the observations the agent makes
@@ -284,6 +332,30 @@ std::vector<double> MOREPDomain::getAgentObservations(std::pair<double, double> 
     delete[] agentObservations;
     
     return observations;
+}
+
+// generate a counterfactual trajectory 
+std::vector<std::vector<double>> MOREPDomain::generateCounterfactualTrajectory(const std::string& config_filename, const std::string& counterfactualType, int trajectoryLength) {
+    std::vector<std::vector<double>> counterfactualTrajectory;
+    YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
+
+    if (counterfactualType == "static") {
+        double startingX= config["agent"]["startingX"].as<double>();
+        double startingY= config["agent"]["startingY"].as<double>();
+
+        // static counterfactual trajectory with length equal to the teamtrajectory (=episode length)
+        for (int i=0; i<trajectoryLength; i++) {
+            counterfactualTrajectory.push_back({startingX, startingY});
+        }
+    }
+
+    return counterfactualTrajectory;
+}
+
+// initialise zero rewards for an episode // intiialise zero reward for an episode
+std::vector<double> MOREPDomain::initialiseEpisodeReward(const std::string& config_filename) {
+    YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
+    return std::vector<double>(config["MOREPDomain"]["numberOfClassIds"].as<int>(), 0.0);
 }
 
 void MOREPDomain::printInfo() const {

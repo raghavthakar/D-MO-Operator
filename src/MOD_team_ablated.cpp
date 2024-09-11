@@ -41,7 +41,7 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
 
     // Compute the origin for the hypervolume computation
     YAML::Node config = YAML::LoadFile(filename);
-    const int lowerBound = config["team"]["numberOfAgents"].as<int>()
+    const double lowerBound = config["team"]["numberOfAgents"].as<int>()
                                     * config["episode"]["length"].as<int>()
                                     * config["MOREPDomain"]["penalty"].as<int>()
                                     * config["evolutionary"]["numberOfEpisodes"].as<int>() - 1;
@@ -101,7 +101,7 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
             double paretoHypervolume = evoHelper.getHypervolume(paretoFronts[i], lowerBound);
 
             // copy all the agent fitnesses into a vector
-            std::vector<std::vector<int>> paretoFitnesses;
+            std::vector<std::vector<double>> paretoFitnesses;
             for (int j = 0; j < paretoFronts[i].size(); ++j) {
                 paretoFitnesses.push_back(paretoFronts[i][j].fitness); // push the fitness into fitness vector
             }
@@ -109,7 +109,7 @@ void MODTeamAblated::evolve(const std::string& filename, const std::string& data
             // sequentially set the fitness to origin (lowerbound) and recompute hyopervolume to find contribution
             for (int j = 0; j < paretoFitnesses.size(); j++) {
                 auto paretoFitness = paretoFitnesses[j]; // store the fitness
-                paretoFitnesses[j] = std::vector<int>(paretoFitnesses[j].size(), lowerBound + 1); // replace the fitness with lowerbound
+                paretoFitnesses[j] = std::vector<double>(paretoFitnesses[j].size(), lowerBound + 1); // replace the fitness with lowerbound
                 auto counterfactualHypervolume = evoHelper.getHypervolume(paretoFitnesses, lowerBound);
                 paretoFitnesses[j] = paretoFitness; // swap back the original fitness
                 auto differenceImpact = paretoHypervolume - counterfactualHypervolume;

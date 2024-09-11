@@ -148,7 +148,7 @@ void Team::mutate() {
 }
 
 // simualate the team in the provided environment. Returns a vecotr of rewards from each timestep
-std::vector<std::vector<int>> Team::simulate(const std::string& filename, Environment environment) {
+std::vector<std::vector<double>> Team::simulate(const std::string& filename, Environment environment) {
 
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
     
@@ -175,7 +175,7 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
     // Move as per policy for as many steps as in the episode length
     int episodeLength = config["episode"]["length"].as<int>();
     // Reward at each timestep in this episode
-    std::vector<std::vector<int>> rewardHistory; 
+    std::vector<std::vector<double>> rewardHistory; 
     for(int stepNumber = 0; stepNumber < episodeLength; stepNumber++) {
         // Display the current stae of all agents
         // printInfo();
@@ -209,31 +209,21 @@ std::vector<std::vector<int>> Team::simulate(const std::string& filename, Enviro
 
 // re-evaluate the rewards for the team, given the counterfactual trajectory
 // TODO counterfactual evaluation find the rewards for that team
-std::vector<std::vector<int>> Team::replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType) {
-    std::vector<std::vector<double>> counterfactualTrajectory;
-    YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
+std::vector<std::vector<double>> Team::replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType) {
+    // get the counterfactual trajectory
+    std::vector<std::vector<double>> counterfactualTrajectory = environment.generateCounterfactualTrajectory(filename, counterfactualType, this->teamTrajectory.size());
 
-    if (counterfactualType == "static") {
-        double startingX= config["agent"]["startingX"].as<double>();
-        double startingY= config["agent"]["startingY"].as<double>();
-
-        // static counterfactual trajectory with length equal to the teamtrajectory
-        for (int i=0; i<this->teamTrajectory.size(); i++) {
-            counterfactualTrajectory.push_back({startingX, startingY});
-        }
-    }
-
-    std::vector<std::vector<int>> replayRewardsWithCounterfactuals; // Stores the replay rewards with counterfactual replacements
+    std::vector<std::vector<double>> replayRewardsWithCounterfactuals; // Stores the replay rewards with counterfactual replacements
     std::vector<std::vector<std::vector<double>>> workingTeamTrajectory; // store the team trajectory copy to modify
     // for each agent, loop through the episode, get rewards for each timestep with counterfactial replacements
     for (int agentNum=0; agentNum<this->teamTrajectory[0].size(); agentNum++) { // loop through agents
         workingTeamTrajectory = this->teamTrajectory;
 
         // Loop through the working trajectory, replacing the agent position at that timestep with position from counterfactual trajectory
-        std::vector<int> episodeCounterfactualRewards(config["MOREPDomain"]["numberOfClassIds"].as<int>(), 0); // Sum of timestep rewards 
+        std::vector<double> episodeCounterfactualRewards = environment.initialiseEpisodeReward(filename); // Sum of timestep rewards 
         for(int timestep = 0; timestep < workingTeamTrajectory.size(); timestep++) {
             workingTeamTrajectory[timestep][agentNum] = counterfactualTrajectory[timestep]; // repalce the agent's position with counterfactual
-            std::vector<int> timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
+            std::vector<double> timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
             
             for(int rewIndex = 0; rewIndex < timestepRewards.size(); rewIndex++) {
                 episodeCounterfactualRewards[rewIndex] += timestepRewards[rewIndex]; // add tiemstep rewards to the cumulative episode rewards

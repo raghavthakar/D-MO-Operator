@@ -27,9 +27,6 @@ public:
 
     // forward pass through the policy
     std::vector<double> forward(const std::vector<double>& input);
-
-    // forward pass through the policy
-    std::pair<double, double> forward(const std::vector<double>& input);
     
     // Function to get the current position of the agent
     std::vector<double> getPosition() const;
@@ -52,8 +49,8 @@ public:
     Team(const std::string& filename, int id); // Constructor
     Team(const std::string& filename, std::vector<Agent> agents, int id); // Constructor
     void printInfo();
-    std::vector<std::vector<int>> simulate(const std::string& filename, Environment environment);
-    std::vector<std::vector<int>> replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType);
+    std::vector<std::vector<double>> simulate(const std::string& filename, Environment environment);
+    std::vector<std::vector<double>> replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType);
     void mutate();
 };
 

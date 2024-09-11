@@ -138,7 +138,7 @@ std::vector<Agent> EvolutionaryUtils::crossover(Individual parent1, Individual p
 
 
 // Compute the hypervolume contained by the given pareto front
-double EvolutionaryUtils::getHypervolume(std::vector<Individual> individuals, int lowerBound) {
+double EvolutionaryUtils::getHypervolume(std::vector<Individual> individuals, double lowerBound) {
     // get the hypervolume computation reference point from the origin
     // reference poitn is -ve of original as pagmo likes it to be bigger than any other point
     // but for us it is smaller, so ive flipped signs everywhere for hypervolume computattion
@@ -158,7 +158,7 @@ double EvolutionaryUtils::getHypervolume(std::vector<Individual> individuals, in
 }
 
 // Compute the hypervolume contained by the given pareto front
-double EvolutionaryUtils::getHypervolume(std::vector<std::vector<int>> individualFitnesses, int lowerBound) {
+double EvolutionaryUtils::getHypervolume(std::vector<std::vector<double>> individualFitnesses, double lowerBound) {
     // get the hypervolume computation reference point from the origin
     // reference poitn is -ve of original as pagmo likes it to be bigger than any other point
     // but for us it is smaller, so ive flipped signs everywhere for hypervolume computattion
@@ -444,17 +444,17 @@ Individual::Individual(const std::string& filename, int id, std::vector<Agent> a
     crowdingDistance = 0;
 }
 
-std::vector<int> Individual::evaluate(const std::string& filename, std::vector<Environment> environments) {
-    std::vector<std::vector<int>> stepwiseEpisodeReward; // Reward vector from each step of an episode
-    std::vector<int> cumulativeEpisodeReward; // Sum of stewise rewards of an episode
-    std::vector<std::vector<int>> cumulativeRewardsFromEachEpisode; // List of the cumulative episode rewards
-    std::vector<int> combinedCumulativeRewards; // Sum of the cumulative rewards
+std::vector<double> Individual::evaluate(const std::string& filename, std::vector<Environment> environments) {
+    std::vector<std::vector<double>> stepwiseEpisodeReward; // Reward vector from each step of an episode
+    std::vector<double> cumulativeEpisodeReward; // Sum of stewise rewards of an episode
+    std::vector<std::vector<double>> cumulativeRewardsFromEachEpisode; // List of the cumulative episode rewards
+    std::vector<double> combinedCumulativeRewards; // Sum of the cumulative rewards
     
     for (Environment env : environments) {
         env.reset();
         env.loadConfig(filename);
         stepwiseEpisodeReward = team.simulate(filename, env);
-        cumulativeEpisodeReward = std::vector<int>(stepwiseEpisodeReward[0].size(), 0);
+        cumulativeEpisodeReward = std::vector<double>(stepwiseEpisodeReward[0].size(), 0);
 
         for (auto& episodeReward : stepwiseEpisodeReward) {
             for (size_t i=0; i< episodeReward.size(); i++) {
@@ -465,7 +465,7 @@ std::vector<int> Individual::evaluate(const std::string& filename, std::vector<E
         cumulativeRewardsFromEachEpisode.push_back(cumulativeEpisodeReward);
     }
 
-    combinedCumulativeRewards = std::vector<int>(cumulativeRewardsFromEachEpisode[0].size(), 0);
+    combinedCumulativeRewards = std::vector<double>(cumulativeRewardsFromEachEpisode[0].size(), 0);
     for (auto& cumulativeReward : cumulativeRewardsFromEachEpisode) {
         for (size_t i=0; i< cumulativeReward.size(); i++) {
             combinedCumulativeRewards[i] += cumulativeReward[i];
@@ -486,12 +486,12 @@ void Individual::differenceEvaluate(const std::string& filename, std::vector<Env
     EvolutionaryUtils evoHelper;
     
     // 1. get and sum the replay rewards for each environment in environments
-    std::vector<std::vector<int>> cumulativeReplayRewards;
+    std::vector<std::vector<double>> cumulativeReplayRewards;
     for (auto environ : environments) {
         if (cumulativeReplayRewards.size() == 0) {
             cumulativeReplayRewards = team.replayWithCounterfactual(filename, environ, counterfactualType);
         } else {
-            std::vector<std::vector<int>> replayRewards = team.replayWithCounterfactual(filename, environ, counterfactualType);
+            std::vector<std::vector<double>> replayRewards = team.replayWithCounterfactual(filename, environ, counterfactualType);
             for (int i = 0; i < cumulativeReplayRewards.size(); i++) { // for all agents in the team
                 for (int rewNumber = 0; rewNumber < cumulativeReplayRewards[i].size(); rewNumber++) { // add up the counterfactual rewards
                     cumulativeReplayRewards[i][rewNumber] += replayRewards[i][rewNumber];
@@ -501,7 +501,7 @@ void Individual::differenceEvaluate(const std::string& filename, std::vector<Env
     }
 
     // 2. Get pareto front hypervolume with these rewards swapped in for the original agent rewards
-    std::vector<std::vector<int>> paretoFitnesses; // temporary front to deal with new hypervolume computations for each agent
+    std::vector<std::vector<double>> paretoFitnesses; // temporary front to deal with new hypervolume computations for each agent
     for (int i=0; i<paretoFront.size(); i++) { // populate working pareto front with all but this individual
         if (i == paretoIndex) continue;
         else {
