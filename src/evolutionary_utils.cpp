@@ -12,7 +12,7 @@
 #include <fstream>
 #include <filesystem>
 
-const int NONE = std::numeric_limits<int>::min();
+const double NONE = -25000;
 
 EvolutionaryUtils::EvolutionaryUtils() {
     x=2;

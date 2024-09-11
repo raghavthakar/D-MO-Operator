@@ -16,7 +16,7 @@
 #include <thread>
 #include <fstream>
 
-const int NONE = std::numeric_limits<int>::min();
+const double NONE = -25000;
 
 
 MODAblated::MODAblated(const std::string& filename) {

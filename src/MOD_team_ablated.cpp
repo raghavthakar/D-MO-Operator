@@ -16,7 +16,7 @@
 #include <thread>
 #include <fstream>
 
-const int NONE = std::numeric_limits<int>::min();
+const double NONE = -25000;
 
 
 MODTeamAblated::MODTeamAblated(const std::string& filename) {

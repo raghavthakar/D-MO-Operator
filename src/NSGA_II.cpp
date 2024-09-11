@@ -13,7 +13,7 @@
 #include <fstream>
 #include <cassert>
 
-const int NONE = std::numeric_limits<int>::min();
+const double NONE = -25000;
 const int MAX  = std::numeric_limits<int>::max();
 
 NSGA_II::NSGA_II(const std::string& filename) {

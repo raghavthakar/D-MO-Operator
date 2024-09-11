@@ -26,11 +26,13 @@ std::vector<double> Environment::getRewards(std::vector<std::vector<double>> age
     }
 
     auto episodeReward = rover_env.getRewards(convertedPositions, stepNumber);
-    std::vector<double> convertedEpisodeReward;
+    // Initialize the vector of doubles with the same size as the int vector
+    std::vector<double> convertedEpisodeReward(episodeReward.size());
 
-    // Use std::transform to convert each element from int to double
-    std::transform(episodeReward.begin(), episodeReward.end(), convertedEpisodeReward.begin(),
-                   [](int val) { return static_cast<double>(val); });
+    // Manually copy and convert each element
+    for (size_t i = 0; i < episodeReward.size(); ++i) {
+        convertedEpisodeReward[i] = static_cast<double>(episodeReward[i]);
+    }
 
     return convertedEpisodeReward;
 }
