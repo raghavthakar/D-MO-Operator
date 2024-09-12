@@ -1,7 +1,6 @@
 #include "MOD_team_ablated.h"
 #include "evolutionary_utils.h"
 #include "environment.h"
-#include "policy.h"
 #include "team.h"
 #include <vector>
 #include <random>

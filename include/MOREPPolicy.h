@@ -1,13 +1,13 @@
-#ifndef POLICY_H
-#define POLICY_H
+#ifndef MOREPPOLICY_H
+#define MOREPPOLICY_H
 
 #include "torch/torch.h"
 
-class Policy : public torch::nn::Module {
+class MOREPPolicy : public torch::nn::Module {
 public:
-    Policy();
-    Policy(int inputSize, double weightLowerLimit, double weightUpperLimit);
-    Policy(const Policy& other);
+    MOREPPolicy();
+    MOREPPolicy(int inputSize, double weightLowerLimit, double weightUpperLimit);
+    MOREPPolicy(const MOREPPolicy& other);
 
     std::pair<double, double> forward(const std::vector<double>& input);
     void display();

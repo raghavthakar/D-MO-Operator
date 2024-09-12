@@ -14,7 +14,7 @@ MOREPBaseAgent::MOREPBaseAgent(double x, double y, double startingX_, double sta
 MOREPBaseAgent::MOREPBaseAgent(const MOREPBaseAgent& other) : posX(other.posX), posY(other.posY), startingX(other.startingX), startingY(other.startingY), maxStepSize(other.maxStepSize), 
     observationRadius(other.observationRadius), numberOfSensors(other.numberOfSensors), nnWeightMin(other.nnWeightMin), 
     nnWeightMax(other.nnWeightMax), noiseMean(other.noiseMean), noiseStdDev(other.noiseStdDev) {
-        this->policy = *std::make_shared<Policy>(other.policy);;
+        this->policy = *std::make_shared<MOREPPolicy>(other.policy);;
 }
 
 // Function to move the MOREPBaseAgent by dx, dy (within maximum step size)

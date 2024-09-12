@@ -24,8 +24,8 @@ double BeachSection::_getLocalCapacityReward(std::vector<unsigned short int> age
 }
 
 // Beac Section local mixture reward
-double BeachSection::_getLocalMixtureReward(std::vector<unsigned short int> agentPositions, std::vector<unsigned short int> agentTypes, unsigned short int numBeachSections) {
-    if (agentPositions.size() != agentTypes.size()) {
+double BeachSection::_getLocalMixtureReward(std::vector<unsigned short int> agentPositions, std::vector<unsigned short int> agentGenderTypes, unsigned short int numBeachSections) {
+    if (agentPositions.size() != agentGenderTypes.size()) {
         std::cout<<"Agent positions must be equal to agent types. Exiting...\n";
         std::exit(1);
     }
@@ -39,7 +39,7 @@ double BeachSection::_getLocalMixtureReward(std::vector<unsigned short int> agen
 
     for (std::size_t i = 0; i < agentPositions.size(); i++) {
         if (agentPositions[i] == this->_section_id) {
-            numOccupyingAgents[agentTypes[i]]++; // increment the counter for the corresponding agent type
+            numOccupyingAgents[agentGenderTypes[i]]++; // increment the counter for the corresponding agent type
         }
     }
 

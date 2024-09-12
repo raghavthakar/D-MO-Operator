@@ -2,7 +2,6 @@
 #define TEAM_H
 
 #include "environment.h"
-#include "policy.h"
 #include "MOREPBaseAgent.h"
 #include <vector>
 #include <string>

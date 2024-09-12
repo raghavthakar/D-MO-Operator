@@ -2,7 +2,6 @@
 #define NSGA_II_H
 
 #include "environment.h"
-#include "policy.h"
 #include "team.h"
 #include "evolutionary_utils.h"
 #include <vector>

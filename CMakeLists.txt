@@ -27,7 +27,7 @@ set(SOURCES
     src/MOREPDomain.cpp
     src/MOBPDomain.cpp
     src/environment.cpp
-    src/policy.cpp
+    src/MOREPPolicy.cpp
     src/team.cpp
     src/evolutionary_utils.cpp
     src/MOD.cpp

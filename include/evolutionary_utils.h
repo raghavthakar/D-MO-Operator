@@ -1,7 +1,6 @@
 #ifndef EVOLUTIONARYUTILS_H
 #define EVOLUTIONARYUTILS_H
 
-#include "policy.h"
 #include "team.h"
 #include "environment.h"
 #include <unordered_map>

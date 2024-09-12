@@ -1,10 +1,10 @@
-#include "policy.h"
+#include "MOREPPolicy.h"
 #include "torch/torch.h"
 #include <iostream>
 
-Policy::Policy() {}
+MOREPPolicy::MOREPPolicy() {}
 
-Policy::Policy(int inputSize, double weightLowerLimit, double weightUpperLimit) {
+MOREPPolicy::MOREPPolicy(int inputSize, double weightLowerLimit, double weightUpperLimit) {
     // Define the layers of the neural network
     fc1 = register_module("fc1", torch::nn::Linear(inputSize, 6));
     fc2 = register_module("fc2", torch::nn::Linear(6, 6));
@@ -18,13 +18,13 @@ Policy::Policy(int inputSize, double weightLowerLimit, double weightUpperLimit) 
 }
 
 // copy construct (deep copy)
-Policy::Policy(const Policy& other) {
+MOREPPolicy::MOREPPolicy(const MOREPPolicy& other) {
     // Define the layers of the neural network
     fc1 = register_module("fc1", torch::nn::Linear(other.fc1->weight.size(1), other.fc1->weight.size(0)));
     fc2 = register_module("fc2", torch::nn::Linear(other.fc2->weight.size(1), other.fc2->weight.size(0)));
     fc3 = register_module("fc3", torch::nn::Linear(other.fc3->weight.size(1), other.fc3->weight.size(0)));
 
-    // Copy the weights from the original policy to the new one
+    // Copy the weights from the original MOREPPolicy to the new one
     torch::NoGradGuard no_grad; // Disable gradient computation temporarily
     fc1->weight.copy_(other.fc1->weight);
     fc1->bias.copy_(other.fc1->bias);
@@ -34,7 +34,7 @@ Policy::Policy(const Policy& other) {
     fc3->bias.copy_(other.fc3->bias);
 }
 
-std::pair<double, double> Policy::forward(const std::vector<double>& input) {
+std::pair<double, double> MOREPPolicy::forward(const std::vector<double>& input) {
     // Convert input vector to a torch::Tensor
     torch::Tensor x = torch::tensor(input).view({1, -1});
 
@@ -51,14 +51,14 @@ std::pair<double, double> Policy::forward(const std::vector<double>& input) {
 }
 
 // Display method to print out the weights of each layer
-void Policy::display() {
+void MOREPPolicy::display() {
     std::cout << "Weights of fc1:\n" << getWeightsAsString(fc1->weight) << std::endl;
     std::cout << "Weights of fc2:\n" << getWeightsAsString(fc2->weight) << std::endl;
     std::cout << "Weights of fc3:\n" << getWeightsAsString(fc3->weight) << std::endl;
 }
 
 // Display method to print out the weights of each layer
-std::string Policy::getPolicyAsString() {
+std::string MOREPPolicy::getPolicyAsString() {
     std::stringstream output;
     output << "Weights of fc1:\n" << getWeightsAsString(fc1->weight) << std::endl;
     output << "Weights of fc2:\n" << getWeightsAsString(fc2->weight) << std::endl;
@@ -68,7 +68,7 @@ std::string Policy::getPolicyAsString() {
 }
 
 // Function to display the weights of a tensor
-void Policy::displayWeights(const torch::Tensor& weight) {
+void MOREPPolicy::displayWeights(const torch::Tensor& weight) {
     auto weight_accessor = weight.accessor<float, 2>();
     for (int i = 0; i < weight_accessor.size(0); ++i) {
         for (int j = 0; j < weight_accessor.size(1); ++j) {
@@ -79,7 +79,7 @@ void Policy::displayWeights(const torch::Tensor& weight) {
 }
 
 // Function to return the weights of a tensor as a string
-std::string Policy::getWeightsAsString(const torch::Tensor& weight) {
+std::string MOREPPolicy::getWeightsAsString(const torch::Tensor& weight) {
     std::stringstream output;
     auto weight_accessor = weight.accessor<float, 2>();
     for (int i = 0; i < weight_accessor.size(0); ++i) {
@@ -91,8 +91,8 @@ std::string Policy::getWeightsAsString(const torch::Tensor& weight) {
     return output.str();
 }
 
-// Function to add the prescrived noise to the policy weights
-void Policy::addNoise(double mean, double stddev) {
+// Function to add the prescrived noise to the MOREPPolicy weights
+void MOREPPolicy::addNoise(double mean, double stddev) {
     // Add noise to the weights of each linear layer
         torch::NoGradGuard no_grad; // Disable gradient tracking
 

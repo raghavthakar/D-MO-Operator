@@ -1,6 +1,5 @@
 #include "team.h"
 #include "environment.h"
-#include "policy.h"
 #include <vector>
 #include <unordered_set>
 #include <utility>

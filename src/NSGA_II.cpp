@@ -1,7 +1,6 @@
 #include "NSGA_II.h"
 #include "evolutionary_utils.h"
 #include "environment.h"
-#include "policy.h"
 #include "team.h"
 #include <yaml-cpp/yaml.h>
 #include <limits>

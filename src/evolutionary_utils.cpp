@@ -1,6 +1,5 @@
 #include "evolutionary_utils.h"
 #include "environment.h"
-#include "policy.h"
 #include "team.h"
 #include <yaml-cpp/yaml.h>
 #include <pagmo/utils/hypervolume.hpp>
