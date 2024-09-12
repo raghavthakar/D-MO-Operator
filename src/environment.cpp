@@ -1,5 +1,6 @@
 #include "environment.h"
 #include "MOREPDomain.h"
+#include "MOBPDomain.h"
 #include <iostream>
 #include <fstream>
 #include <limits>
@@ -55,10 +56,6 @@ std::vector<std::vector<double>> Environment::generateCounterfactualTrajectory(c
 // initialise zero rewards for an episode // intiialise zero reward for an episode
 std::vector<double> Environment::initialiseEpisodeReward(const std::string& config_filename) {
     return this->rover_env.initialiseEpisodeReward(config_filename);
-}
-
-std::pair<int, int> Environment::getDimensions() {
-    return this->rover_env.getDimensions();
 }
 
 void Environment::reset() {

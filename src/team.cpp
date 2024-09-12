@@ -158,14 +158,6 @@ std::vector<std::vector<double>> Team::simulate(const std::string& filename, Env
     int startingX, startingY;
 
     for(auto& agent : agents) {
-        if (randomStartPosition == true) {
-            startingX = rand()%(environment.getDimensions().first+1); // Get random within limits
-            startingY = rand()%(environment.getDimensions().second+1);
-        } else {
-            startingX = agent_config["startingX"].as<int>(); // Read from config
-            startingY = agent_config["startingY"].as<int>();
-        }
-
         // reset the agents at the starting positions and clear the observations
         agent.reset();
     }

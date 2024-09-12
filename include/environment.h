@@ -2,6 +2,7 @@
 #define ENVIRONMENT_H
 
 #include "MOREPDomain.h"
+#include "MOBPDomain.h"
 #include <vector>
 #include <string>
 #include <utility>
@@ -11,6 +12,8 @@
 // Simulation environment class definition
 class Environment {
     MOREPDomain rover_env;
+    MOBPDomain beach_env;
+
 public:
     // Method to load configuration from YAML file
     void loadConfig(const std::string& filename);
@@ -22,8 +25,6 @@ public:
     std::vector<std::vector<double>> generateCounterfactualTrajectory(const std::string& config_filename, const std::string& counterfactualType, int trajectoryLength);
     // intiialise zero reward for an episode
     std::vector<double> initialiseEpisodeReward(const std::string& config_filename);
-    // Method to return the dimensions of the environment
-    std::pair<int, int> getDimensions();
     void reset();
 };
 
