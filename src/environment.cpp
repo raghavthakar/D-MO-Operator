@@ -43,6 +43,12 @@ std::pair<double, double> Environment::moveAgent(std::pair<double, double> curre
     return this->rover_env.moveAgent(currentPos,delta, maxStepSize);
 }
 
+// take in an agent's position and return new position based on environmental limits
+// overloaded for MOBP
+unsigned short int Environment::moveAgent(unsigned short int currentPos, unsigned short int delta) {
+    return this->beach_env.moveAgent(currentPos, delta);
+}
+
 // observations of an agent
 std::vector<double> Environment::getAgentObservations(std::pair<double, double> agentPos, int numberOfSensors, double observationRadius, std::vector<std::pair<double, double>> agentPositions) {
     return this->rover_env.getAgentObservations(agentPos, numberOfSensors, observationRadius, agentPositions);

@@ -88,8 +88,8 @@ unsigned short int MOBPDomain::getAgentObservation(unsigned short int agentPos) 
 }
 
 // move an agent within the domain bounds based on the provided move and return the new position
-unsigned short int MOBPDomain::moveAgent(unsigned short int agentPos, short int move) {
-    if (move < -1 || move > 1) {
+unsigned short int MOBPDomain::moveAgent(unsigned short int agentPos, short int delta) {
+    if (delta < -1 || delta > 1) {
         std::cout<<"Can only move one step at a time, and the provided move is too large. Exiting...\n";
         std::exit(1);
     }
@@ -99,7 +99,7 @@ unsigned short int MOBPDomain::moveAgent(unsigned short int agentPos, short int 
         std::exit(1);
     }
 
-    short int newPos = agentPos + move;
+    short int newPos = agentPos + delta;
     // cannot move if outside domain limuits
     if (newPos < 0 || newPos >= this->_beachSections.size())
         return agentPos;

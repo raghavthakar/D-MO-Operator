@@ -3,6 +3,7 @@
 
 #include "environment.h"
 #include "MOREPBaseAgent.h"
+#include "MOBPBaseAgent.h"
 #include <vector>
 #include <string>
 #include <cmath>
@@ -11,6 +12,7 @@
 class Agent {
 public:
     MOREPBaseAgent rover;
+    MOREPBaseAgent beachPerson;
     // Constructor
     Agent(const std::string& config_filename);
     Agent(const Agent& other);
@@ -29,11 +31,6 @@ public:
     
     // Function to get the current position of the agent
     std::vector<double> getPosition() const;
-
-
-
-    // Function to get the maxStepSize of the agent
-    int getMaxStepSize() const;
 
     // Add noise to the contained policy
     void addNoiseToPolicy();

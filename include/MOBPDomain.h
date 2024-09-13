@@ -13,9 +13,9 @@ class BeachSection {
     double _getLocalMixtureReward(std::vector<unsigned short int> agentPositions, std::vector<unsigned short int> agentTypes, unsigned short int numBeachSections);
 
 public:
-    enum genderTypes {male, female};
-    enum occupationTypes {student, working, retired};
-    enum objectiveTypedefs {cap, mix, occupation};
+    enum genderType {male, female};
+    enum occupationType {student, working, retired};
+    enum objectiveTypedef {cap, mix, occupation};
     BeachSection(unsigned short int section_id_, unsigned int psi_);
     std::vector<double> getLocalRewards(std::vector<unsigned short int> agentPositions, std::vector<unsigned short int> agentTypes, unsigned short int numBeachSections);
 };

@@ -94,10 +94,6 @@ std::vector<double> Agent::getPosition() const {
     return {position.first, position.second};
 }
 
-int Agent::getMaxStepSize() const {
-    return this->rover.getMaxStepSize();
-}
-
 Team::Team(const std::string& filename, int id) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
 
