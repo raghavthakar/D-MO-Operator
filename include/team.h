@@ -8,14 +8,18 @@
 #include <string>
 #include <cmath>
 #include <utility>
+#include <string>
 
 class Agent {
 public:
     MOREPBaseAgent rover;
-    MOREPBaseAgent beachPerson;
+    MOBPBaseAgent beachPerson;
+    std::string whichDomain;
+
     // Constructor
-    Agent(const std::string& config_filename);
+    Agent(const std::string& config_filename); // only for rover
     Agent(const Agent& other);
+    Agent(unsigned short int pos_, std::string gender_, unsigned short int startingPos_, const std::string& config_filename);
 
     // Function to move the agent by dx, dy (within maximum step size)
     void move(std::vector<double> delta, Environment environment);
@@ -38,6 +42,7 @@ public:
 
 class Team {
 public:
+    std::string whichDomain;
     std::vector<Agent> agents; // Vector to store agents in team
     int id;
     std::vector<std::vector<std::vector<double>>> teamTrajectory;

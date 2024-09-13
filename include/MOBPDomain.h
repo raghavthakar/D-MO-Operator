@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <iostream>
+#include <string>
 
 class BeachSection {
     unsigned short int _section_id; // mus be unique

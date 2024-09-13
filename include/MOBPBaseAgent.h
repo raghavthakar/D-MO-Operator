@@ -24,22 +24,23 @@ public:
     unsigned short int _pos;
     unsigned short int _startingPos;
     unsigned short int _gender;
-    unsigned short int _occupation;
     double _nnWeightMin; // Max and min weights of the policy weights
     double _nnWeightMax;
     double _noiseMean; // POlicy noise mutate's mean
     double _noiseStdDev; // MOBPPolicy noise mutate's stddev
+    std::string whichDomain;
 
     MOBPPolicy policy;
 
     MOBPBaseAgent();
-    MOBPBaseAgent(unsigned short int pos_, unsigned short int gender_, unsigned short int occupation_, unsigned short int startingPos_, double nnWeightMin_, double nnWeightMax_, double noiseMean_, double noiseStdDev_);
+    MOBPBaseAgent(unsigned short int pos_, unsigned short int gender_, unsigned short int startingPos_, double nnWeightMin_, double nnWeightMax_, double noiseMean_, double noiseStdDev_);
     MOBPBaseAgent(const MOBPBaseAgent& other);
     void move(unsigned short int delta, Environment environment);
     void reset();
     unsigned short int getPosition() const;
     short int forward(const std::vector<double>& input);
     unsigned short int observe();
+    void addNoiseToPolicy();
 };
 
 #endif

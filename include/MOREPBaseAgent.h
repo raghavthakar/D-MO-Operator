@@ -5,6 +5,7 @@
 #include "environment.h"
 #include <utility>
 #include <vector>
+#include <string>
 
 class MOREPBaseAgent {
 public:
@@ -19,6 +20,8 @@ public:
     double nnWeightMax;
     double noiseMean; // POlicy noise mutate's mean
     double noiseStdDev; // MOREPPolicy noise mutate's stddev
+
+    std::string whichDomain;
 
     // MOREPPolicy object that stores the MOREPBaseAgent's neural network
     MOREPPolicy policy;

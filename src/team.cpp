@@ -24,86 +24,223 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 
 // = operator
 
-// Constructor
+// Constructor for rover
 Agent::Agent(const std::string& config_filename) {
+    YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
+
+    this->whichDomain = config["experiment"]["domain"].as<std::string>();
+
+    const YAML::Node& agent_config = config["agent"]; // Agent config info
+
+    if (this->whichDomain == rover.whichDomain){
+        this->rover = MOREPBaseAgent(agent_config["startingX"].as<int>(),
+            agent_config["startingY"].as<int>(),
+            agent_config["startingX"].as<int>(),
+            agent_config["startingY"].as<int>(),
+            agent_config["maxStepSize"].as<int>(),
+            agent_config["observationRadius"].as<double>(),
+            agent_config["numberOfSensors"].as<int>(),
+            config["MOREPDomain"]["numberOfClassIds"].as<int>(),
+            agent_config["nnWeightMin"].as<double>(),
+            agent_config["nnWeightMax"].as<double>(),
+            agent_config["noiseMean"].as<double>(),
+            agent_config["noiseStdDev"].as<double>());
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
+}
+
+// constructor for beach
+Agent::Agent(unsigned short int pos_, std::string gender_, unsigned short int startingPos_, const std::string& config_filename) {
     YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
     const YAML::Node& agent_config = config["agent"]; // Agent config info
 
-    this->rover = MOREPBaseAgent(agent_config["startingX"].as<int>(),
-        agent_config["startingY"].as<int>(),
-        agent_config["startingX"].as<int>(),
-        agent_config["startingY"].as<int>(),
-        agent_config["maxStepSize"].as<int>(),
-        agent_config["observationRadius"].as<double>(),
-        agent_config["numberOfSensors"].as<int>(),
-        config["MOREPDomain"]["numberOfClassIds"].as<int>(),
-        agent_config["nnWeightMin"].as<double>(),
-        agent_config["nnWeightMax"].as<double>(),
-        agent_config["noiseMean"].as<double>(),
-        agent_config["noiseStdDev"].as<double>());
+    this->whichDomain = config["experiment"]["domain"].as<std::string>();
+
+    // convert string gender to unsigned short int
+    unsigned short int gender_int;
+    if (gender_ == "male")
+        gender_int = 0;
+    else if (gender_ == "female")
+        gender_int = 1;
+
+    if (this->whichDomain == beachPerson.whichDomain){
+        this->beachPerson = MOBPBaseAgent(pos_, 
+                                gender_int, 
+                                startingPos_,
+                                agent_config["nnWeightMin"].as<double>(),
+                                agent_config["nnWeightMax"].as<double>(),
+                                agent_config["noiseMean"].as<double>(),
+                                agent_config["noiseStdDev"].as<double>());
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // copy constructor
 Agent::Agent(const Agent& other) {
-    this->rover = MOREPBaseAgent(other.rover);
+    this->whichDomain = other.whichDomain;
+
+    if (this->whichDomain == rover.whichDomain){
+        this->rover = MOREPBaseAgent(other.rover);
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        this->beachPerson = MOBPBaseAgent(other.beachPerson);
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
+    
 }
 
 // Function to move the agent by dx, dy (within maximum step size)
 void Agent::move(std::vector<double> delta, Environment environment) {
-    this->rover.move(std::make_pair(delta[0], delta[1]), environment);
+    if (this->whichDomain == rover.whichDomain){
+        assert(delta.size() == 2 && "Rover delta must be 2!");
+        this->rover.move(std::make_pair(delta[0], delta[1]), environment);
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        assert(delta.size() == 1 && "Beach delta cannot be more than 1 element!");
+        this->beachPerson.move(delta[0], environment);
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // Function to set the agent at the starting position and clear its observations
 void Agent::reset() {
-    this->rover.reset(); 
+    if (this->whichDomain == rover.whichDomain){
+        this->rover.reset();
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        this->beachPerson.reset();
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // Adds noise to the contained policy
 void Agent::addNoiseToPolicy() {
-    this->rover.addNoiseToPolicy();
+    if (this->whichDomain == rover.whichDomain){
+        this->rover.addNoiseToPolicy();
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        this->beachPerson.addNoiseToPolicy();
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // Observe and create state vector
 // Assumes that POIs have classID 0, 1, 2....
 std::vector<double> Agent::observe(Environment environment, std::vector<std::vector<double>> agentPositions) {
-    // Convert std::vector<std::vector<double>> to std::vector<std::pair<double, double>>
-    std::vector<std::pair<double, double>> convertedPositions;
-    convertedPositions.reserve(agentPositions.size());
+    if (this->whichDomain == rover.whichDomain){
+        // Convert std::vector<std::vector<double>> to std::vector<std::pair<double, double>>
+        std::vector<std::pair<double, double>> convertedPositions;
+        convertedPositions.reserve(agentPositions.size());
 
-    for (const auto& position : agentPositions) {
-        // Assuming each inner vector has exactly 2 elements
-        if (position.size() == 2) {
-            convertedPositions.emplace_back(position[0], position[1]);
-        } else {
-            throw std::runtime_error("Each position vector must have exactly 2 elements.");
+        for (const auto& position : agentPositions) {
+            // Assuming each inner vector has exactly 2 elements
+            if (position.size() == 2) {
+                convertedPositions.emplace_back(position[0], position[1]);
+            } else {
+                throw std::runtime_error("Each position vector must have exactly 2 elements.");
+            }
         }
-    }
 
-    return this->rover.observe(environment, convertedPositions);
+        return this->rover.observe(environment, convertedPositions);
+    }
+    else if (this->whichDomain == beachPerson.whichDomain) {
+        return std::vector<double>(1, this->beachPerson.observe());
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // forward pass through the policy
 std::vector<double> Agent::forward(const std::vector<double>& input) {
-    auto output = this->rover.forward(input);
-    return {output.first, output.second};
+    if (this->whichDomain == rover.whichDomain){
+        auto output = this->rover.forward(input);
+        return {output.first, output.second};
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        short int output = this->beachPerson.forward(input);
+        return std::vector<double>(1, output);
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // Function to get the current position of the agent
 std::vector<double> Agent::getPosition() const {
-    auto position = this->rover.getPosition();
-    return {position.first, position.second};
+    if (this->whichDomain == rover.whichDomain){
+        auto position = this->rover.getPosition();
+        return {position.first, position.second};
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        auto position = this->beachPerson.getPosition();
+        return {(double)position};
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 Team::Team(const std::string& filename, int id) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
 
+    this->whichDomain = config["experiment"]["domain"].as<std::string>();
     const YAML::Node& team_config = config["team"]; // Team config info
-    const YAML::Node& agent_config = config["agent"]; // Agent config info
 
-    bool randomStartPosition = agent_config["randomStartPosition"].as<bool>(); // Are the start pos random?
 
-    for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
-        agents.emplace_back(filename); // Create agent object and store in vector
+    // initialise agents according to the experiment domain
+    if (this->whichDomain == "MOREPDomain") {
+        for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
+            agents.emplace_back(filename); // Create agent object and store in vector
+        }
+    }
+    // heterogeneous beach agents require work for initialisation
+    else if (this->whichDomain == "MOBPDomain") {
+        const YAML::Node& MOBP_config = config["MOBPDomain"];
+
+        for (const auto& section : config["Sections"]) {
+            // get section info from the config
+            int maleTourists = section["maleTourists"].as<int>();
+            int femaleTourists = section["femaleTourists"].as<int>();
+            int id = section["id"].as<int>();
+            
+            // initialise male agents at this section
+            for (int i = 0; i < maleTourists; i++) {
+                agents.emplace_back(id, "male", id, filename);
+            }
+
+            // initialise female agents at this section
+            for (int i = 0; i < femaleTourists; i++) {
+                agents.emplace_back(id, "female", id, filename);
+            }
+        }
     }
 
     this->id = id; // Store the team id
@@ -115,9 +252,6 @@ Team::Team(const std::string& filename, std::vector<Agent> agents, int id) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
 
     const YAML::Node& team_config = config["team"]; // Team config info
-    const YAML::Node& agent_config = config["agent"]; // Agent config info
-
-    bool randomStartPosition = agent_config["randomStartPosition"].as<bool>(); // Are the start pos random?
 
     this->agents = agents;
 

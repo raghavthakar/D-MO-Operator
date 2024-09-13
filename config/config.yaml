@@ -114,6 +114,40 @@ MOREPDomain:
    
 # --------------------------------------
 
+MOBPDomain:
+  Sections:
+    - id: 0
+      maleTourists: 5
+      femaleTourists: 5
+      psi: 3
+      attraction: false
+    
+    - id: 1
+      maleTourists: 0
+      femaleTourists: 0
+      psi: 3
+      attraction: false
+    
+    - id: 2
+      maleTourists: 0
+      femaleTourists: 0
+      psi: 3
+      attraction: true
+    
+    - id: 3
+      maleTourists: 5
+      femaleTourists: 5
+      psi: 3
+      attraction: false
+    
+    - id: 4
+      maleTourists: 0
+      femaleTourists: 0
+      psi: 3
+      attraction: false
+
+# --------------------------------------
+
 episode:
   length: 240
 # --------------------------------------
@@ -150,5 +184,5 @@ evolutionary:
 
 experiment:
   genLogInterval: 25 # Log info about algo every how many generations?
-  domain: "MOREPDomain"
+  domain: "MOREPDomain" # or "MOBPDomain" or "MOREPDomain"
 # --------------------------------------

@@ -110,25 +110,28 @@ MOBPBaseAgent::MOBPBaseAgent() {
     int x = 2;
 }
 
-MOBPBaseAgent::MOBPBaseAgent(unsigned short int pos_, unsigned short int gender_, unsigned short int occupation_, unsigned short int startingPos_, double nnWeightMin_, double nnWeightMax_, double noiseMean_, double noiseStdDev_) :
+MOBPBaseAgent::MOBPBaseAgent(unsigned short int pos_, unsigned short int gender_, unsigned short int startingPos_, double nnWeightMin_, double nnWeightMax_, double noiseMean_, double noiseStdDev_) :
     _pos(pos_),
     _startingPos(startingPos_),
     _gender(gender_),
-    _occupation(occupation_),
     _nnWeightMin(nnWeightMin_),
     _nnWeightMax(nnWeightMax_),
     _noiseMean(noiseMean_),
-    _noiseStdDev(noiseStdDev_) {}
+    _noiseStdDev(noiseStdDev_) {
+        this->whichDomain = "MOBPPDomain";
+    }
 
 MOBPBaseAgent::MOBPBaseAgent(const MOBPBaseAgent& other) :
     _pos(other._pos),
     _startingPos(other._startingPos),
     _gender(other._gender),
-    _occupation(other._occupation),
     _nnWeightMin(other._nnWeightMin),
     _nnWeightMax(other._nnWeightMax),
     _noiseMean(other._noiseMean),
-    _noiseStdDev(other._noiseStdDev) {}
+    _noiseStdDev(other._noiseStdDev),
+    whichDomain(other.whichDomain) {
+        this->policy = *std::make_shared<MOBPPolicy>(other.policy);
+    }
 
 // update the agent's position respecting the env constraints
 void MOBPBaseAgent::move(unsigned short int delta, Environment environment) {
@@ -154,4 +157,9 @@ short int MOBPBaseAgent::forward(const std::vector<double>& input) {
 // return the agent's observations (which is just its current position)
 unsigned short int MOBPBaseAgent::observe() {
     return this->getPosition();
+}
+
+// mutate the agent's policy a little bit
+void MOBPBaseAgent::addNoiseToPolicy() {
+    this->policy.addNoise(this->_noiseMean, this->_noiseStdDev);
 }

@@ -8,12 +8,14 @@ MOREPBaseAgent::MOREPBaseAgent(double x, double y, double startingX_, double sta
     int _numberOfSensors, int numberOfClassIds, double _nnWeightMin, double _nnWeightMax, double _noiseMean, double _noiseStdDev) : 
     posX(x), posY(y), startingX(startingX_), startingY(startingY_), maxStepSize(_maxStepSize), 
     observationRadius(_observationRadius), numberOfSensors(_numberOfSensors), noiseMean(_noiseMean),
-    noiseStdDev(_noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds) + _numberOfSensors, _nnWeightMin, _nnWeightMax)  {}
+    noiseStdDev(_noiseStdDev), policy(2 + _numberOfSensors * (numberOfClassIds) + _numberOfSensors, _nnWeightMin, _nnWeightMax)  {
+        this->whichDomain = "MOREPDomain";
+    }
 
 // copy constructor
 MOREPBaseAgent::MOREPBaseAgent(const MOREPBaseAgent& other) : posX(other.posX), posY(other.posY), startingX(other.startingX), startingY(other.startingY), maxStepSize(other.maxStepSize), 
     observationRadius(other.observationRadius), numberOfSensors(other.numberOfSensors), nnWeightMin(other.nnWeightMin), 
-    nnWeightMax(other.nnWeightMax), noiseMean(other.noiseMean), noiseStdDev(other.noiseStdDev) {
+    nnWeightMax(other.nnWeightMax), noiseMean(other.noiseMean), noiseStdDev(other.noiseStdDev), whichDomain(other.whichDomain) {
         this->policy = *std::make_shared<MOREPPolicy>(other.policy);;
 }
 
