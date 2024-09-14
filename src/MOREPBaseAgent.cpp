@@ -1,7 +1,7 @@
 #include "MOREPBaseAgent.h"
 
 MOREPBaseAgent::MOREPBaseAgent() {
-    int x = 2;
+    this->whichDomain = "MOREPDomain";
 }
 
 MOREPBaseAgent::MOREPBaseAgent(double x, double y, double startingX_, double startingY_, double _maxStepSize, double _observationRadius, 

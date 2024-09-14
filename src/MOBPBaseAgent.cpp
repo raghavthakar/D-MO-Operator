@@ -107,7 +107,7 @@ void MOBPPolicy::addNoise(double mean, double stddev) {
 
 
 MOBPBaseAgent::MOBPBaseAgent() {
-    int x = 2;
+    this->whichDomain = "MOBPDomain";
 }
 
 MOBPBaseAgent::MOBPBaseAgent(unsigned short int pos_, unsigned short int gender_, unsigned short int startingPos_, double nnWeightMin_, double nnWeightMax_, double noiseMean_, double noiseStdDev_) :
@@ -118,7 +118,8 @@ MOBPBaseAgent::MOBPBaseAgent(unsigned short int pos_, unsigned short int gender_
     _nnWeightMax(nnWeightMax_),
     _noiseMean(noiseMean_),
     _noiseStdDev(noiseStdDev_) {
-        this->whichDomain = "MOBPPDomain";
+        this->whichDomain = "MOBPDomain";
+        this->policy = MOBPPolicy(1, nnWeightMin_, nnWeightMax_);
     }
 
 MOBPBaseAgent::MOBPBaseAgent(const MOBPBaseAgent& other) :

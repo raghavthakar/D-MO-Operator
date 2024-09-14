@@ -40,7 +40,7 @@ Agent::Agent(const std::string& config_filename) {
             agent_config["maxStepSize"].as<int>(),
             agent_config["observationRadius"].as<double>(),
             agent_config["numberOfSensors"].as<int>(),
-            config["MOREPDomain"]["numberOfClassIds"].as<int>(),
+            config["experiment"]["numberOfObjectives"].as<int>(),
             agent_config["nnWeightMin"].as<double>(),
             agent_config["nnWeightMax"].as<double>(),
             agent_config["noiseMean"].as<double>(),
@@ -225,7 +225,7 @@ Team::Team(const std::string& filename, int id) {
     else if (this->whichDomain == "MOBPDomain") {
         const YAML::Node& MOBP_config = config["MOBPDomain"];
 
-        for (const auto& section : config["Sections"]) {
+        for (const auto& section : MOBP_config["Sections"]) {
             // get section info from the config
             int maleTourists = section["maleTourists"].as<int>();
             int femaleTourists = section["femaleTourists"].as<int>();
@@ -250,6 +250,8 @@ Team::Team(const std::string& filename, int id) {
 
 Team::Team(const std::string& filename, std::vector<Agent> agents, int id) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
+
+    this->whichDomain = config["experiment"]["domain"].as<std::string>();
 
     const YAML::Node& team_config = config["team"]; // Team config info
 
@@ -305,13 +307,25 @@ std::vector<std::vector<double>> Team::simulate(const std::string& filename, Env
         for (auto& agent : agents) {
             agentPositions.push_back(agent.getPosition());
         }
-
         // push these agent positions to the teamTrajectory
         teamTrajectory.push_back(agentPositions);
 
-        // compute the rewards for these agent positions
-        rewardHistory.push_back(environment.getRewards(agentPositions, stepNumber));
-        // std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
+        std::vector<unsigned short int> agentTypes;
+        if (this->whichDomain == "MOBPDomain") { // if beach domain
+            for (auto& agent : agents) {
+                agentTypes.push_back(agent.beachPerson._gender); // need to send in the agent types as well
+            }
+
+            rewardHistory.push_back(environment.getRewards(agentPositions, agentTypes, stepNumber));
+        }
+        else if (this->whichDomain == "MOREPDomain") { // for the rover domain only the agent poisitions are neneded
+            // compute the rewards for these agent positions
+            rewardHistory.push_back(environment.getRewards(agentPositions, stepNumber));
+        }
+        else {
+            std::cout<<"Domain is unrecognised!";
+            exit(1);
+        }
 
         // Get the observation for each agent and feed it to its network to get the move
         std::vector<std::vector<double>> agentDeltas;
@@ -329,10 +343,14 @@ std::vector<std::vector<double>> Team::simulate(const std::string& filename, Env
 }
 
 // re-evaluate the rewards for the team, given the counterfactual trajectory
-// TODO counterfactual evaluation find the rewards for that team
 std::vector<std::vector<double>> Team::replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType) {
     // get the counterfactual trajectory
-    std::vector<std::vector<double>> counterfactualTrajectory = environment.generateCounterfactualTrajectory(filename, counterfactualType, this->teamTrajectory.size());
+    std::vector<std::vector<double>> counterfactualTrajectory;
+
+    // counterfactual trajectories are identical for all rovers
+    if (this->whichDomain == this->agents[0].rover.whichDomain) {
+        counterfactualTrajectory = environment.generateCounterfactualTrajectory(filename, counterfactualType, this->teamTrajectory.size());
+    }
 
     std::vector<std::vector<double>> replayRewardsWithCounterfactuals; // Stores the replay rewards with counterfactual replacements
     std::vector<std::vector<std::vector<double>>> workingTeamTrajectory; // store the team trajectory copy to modify
@@ -340,11 +358,27 @@ std::vector<std::vector<double>> Team::replayWithCounterfactual(const std::strin
     for (int agentNum=0; agentNum<this->teamTrajectory[0].size(); agentNum++) { // loop through agents
         workingTeamTrajectory = this->teamTrajectory;
 
+        // but for each beach agent the starting position is different
+        if (this->whichDomain == this->agents[agentNum].beachPerson.whichDomain) {
+            counterfactualTrajectory = environment.generateCounterfactualTrajectory(filename, counterfactualType, this->teamTrajectory.size(), agents[agentNum].beachPerson._startingPos);
+        }
+
         // Loop through the working trajectory, replacing the agent position at that timestep with position from counterfactual trajectory
         std::vector<double> episodeCounterfactualRewards = environment.initialiseEpisodeReward(filename); // Sum of timestep rewards 
         for(int timestep = 0; timestep < workingTeamTrajectory.size(); timestep++) {
             workingTeamTrajectory[timestep][agentNum] = counterfactualTrajectory[timestep]; // repalce the agent's position with counterfactual
-            std::vector<double> timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
+            std::vector<double> timestepRewards;
+
+            if (this->whichDomain == this->agents[0].rover.whichDomain) {
+                timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
+            }
+            else if (this->whichDomain == this->agents[0].beachPerson.whichDomain) {
+                std::vector<unsigned short int> agentTypes;
+                for (auto& agent : this->agents) {
+                    agentTypes.push_back(agent.beachPerson._gender); // need to send in the agent types as well
+                }
+                timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], agentTypes, timestep); // get the rewards for the team with counterfactual agent at this timestep
+            }
             
             for(int rewIndex = 0; rewIndex < timestepRewards.size(); rewIndex++) {
                 episodeCounterfactualRewards[rewIndex] += timestepRewards[rewIndex]; // add tiemstep rewards to the cumulative episode rewards

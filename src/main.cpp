@@ -21,7 +21,7 @@ std::string getCurrentDateTimeString() {
 
 int main(int argc, char* argv[]) {
     // Extract filename from command-line arguments
-    std::string project_root = "/home/thakarr/D-MO-Operator/";
+    std::string project_root = "/home/raghav/research/multiobjective_diff_evals/MOD/";
     std::string config_filename = project_root + "config/config.yaml";
     std::string data_filename_root = project_root + "experiments/data/env_split_data/"; // Default data filename with current date and time
 
@@ -61,10 +61,10 @@ int main(int argc, char* argv[]) {
         // nsga.evolve(config_filename, data_filename_root + currentDateTimeString + "_NSGA_II_.csv");
         MOD evo(config_filename);
         evo.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_.csv");
-        MODAblated abl(config_filename);
-        abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_ABLATED_.csv");
-        MODTeamAblated team_abl(config_filename);
-        team_abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_TEAM_ABLATED_.csv");
+        // MODAblated abl(config_filename);
+        // abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_ABLATED_.csv");
+        // MODTeamAblated team_abl(config_filename);
+        // team_abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_TEAM_ABLATED_.csv");
     }
     
 

@@ -26,10 +26,16 @@ class MOBPDomain
 private:
     std::vector<BeachSection> _beachSections;
 public:
+    std::string whichDomain;
     MOBPDomain();
     MOBPDomain(std::vector<unsigned int> psis);
+    MOBPDomain(const std::string& config_filename);
     unsigned short int getAgentObservation(unsigned short int agentPos);
     unsigned short int moveAgent(unsigned short int agentPos, short int move);
+    std::vector<double> getRewards(std::vector<unsigned short int> agentPositions, std::vector<unsigned short int> agentTypes);
+    std::vector<std::vector<unsigned short int>> generateCounterfactualTrajectory(const std::string& config_filename, const std::string& counterfactualType, int trajectoryLength, unsigned short int startingPos);
+    std::vector<double> initialiseEpisodeReward(const std::string& config_filename);
+    void reset();
 };
 
 #endif // MOBPDomain_H

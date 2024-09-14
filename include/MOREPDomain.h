@@ -37,6 +37,8 @@ private:
     int penalty; // Penalty at each timestep
 
 public:
+    std::string whichDomain;
+    MOREPDomain();
     // Method to load configuration from YAML file
     void loadConfig(const std::string& filename);
 

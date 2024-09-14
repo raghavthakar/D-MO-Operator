@@ -1,7 +1,6 @@
 MOREPDomain:
   differentEnvs: false # New env config every episode or not?
   numberOfPOIs: 8
-  numberOfClassIds: 2
   dimensions:
     xLength: 160
     yLength: 160
@@ -149,7 +148,7 @@ MOBPDomain:
 # --------------------------------------
 
 episode:
-  length: 240
+  length: 2
 # --------------------------------------
 
 team:
@@ -184,5 +183,6 @@ evolutionary:
 
 experiment:
   genLogInterval: 25 # Log info about algo every how many generations?
-  domain: "MOREPDomain" # or "MOBPDomain" or "MOREPDomain"
+  domain: "MOBPDomain" # or "MOBPDomain" or "MOREPDomain"
+  numberOfObjectives: 2
 # --------------------------------------

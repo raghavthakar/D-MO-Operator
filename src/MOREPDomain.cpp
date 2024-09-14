@@ -4,6 +4,7 @@
 #include <limits>
 #include <unordered_set>
 #include <yaml-cpp/yaml.h>
+#include <string>
 
 POI::POI(int id, int classId, double x, double y, double observationRadius, int coupling, 
     int reward, std::pair<int, int> observableWindow, bool exactCouplingNeeded, bool rewardOnce)
@@ -20,7 +21,13 @@ void POI::setAsObserved() {
     this->observed = true;
 }
 
+MOREPDomain::MOREPDomain() {
+    this->whichDomain = "MOREPDomain";
+}
+
 void MOREPDomain::loadConfig(const std::string& filename) {
+    this->whichDomain = "MOREPDomain";
+
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
 
     const YAML::Node& dimensions = config["MOREPDomain"]["dimensions"];
@@ -30,7 +37,7 @@ void MOREPDomain::loadConfig(const std::string& filename) {
     penalty = config["MOREPDomain"]["penalty"].as<int>();
 
     int numberOfPOIs = config["MOREPDomain"]["numberOfPOIs"].as<int>();
-    int numberOfClassIDs = config["MOREPDomain"]["numberOfClassIds"].as<int>();
+    int numberOfClassIDs = config["experiment"]["numberOfObjectives"].as<int>();
 
     int poisPerClass = numberOfPOIs / numberOfClassIDs;
     int remainingPOIs = numberOfPOIs % numberOfClassIDs;
@@ -355,7 +362,7 @@ std::vector<std::vector<double>> MOREPDomain::generateCounterfactualTrajectory(c
 // initialise zero rewards for an episode // intiialise zero reward for an episode
 std::vector<double> MOREPDomain::initialiseEpisodeReward(const std::string& config_filename) {
     YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
-    return std::vector<double>(config["MOREPDomain"]["numberOfClassIds"].as<int>(), 0.0);
+    return std::vector<double>(config["experiment"]["numberOfObjectives"].as<int>(), 0.0);
 }
 
 void MOREPDomain::printInfo() const {
