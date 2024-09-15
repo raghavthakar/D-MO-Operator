@@ -30,6 +30,7 @@ public:
     std::vector<std::vector<double>> generateCounterfactualTrajectory(const std::string& config_filename, const std::string& counterfactualType, int trajectoryLength, unsigned short int startingPos);
     // intiialise zero reward for an episode
     std::vector<double> initialiseEpisodeReward(const std::string& config_filename);
+    int getPenalty();
     void reset();
 };
 

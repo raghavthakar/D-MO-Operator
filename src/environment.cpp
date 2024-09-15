@@ -170,3 +170,17 @@ void Environment::reset() {
     this->rover_env.reset();
     this->beach_env.reset();
 }
+
+// return h prnatly of the enviroment
+int Environment::getPenalty() {
+    if (this->whichDomain == this->rover_env.whichDomain) {
+        return this->rover_env.getPenalty();
+    }
+    else if (this->whichDomain == this->beach_env.whichDomain) {
+        return 0;
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
+}

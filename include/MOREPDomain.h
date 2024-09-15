@@ -62,6 +62,9 @@ public:
     // intiialise zero reward for an episode
     std::vector<double> initialiseEpisodeReward(const std::string& config_filename);
 
+    // get the a=penelty of the environment
+    int getPenalty();
+
     // Method to print information about loaded POIs
     void printInfo() const;
 

@@ -40,10 +40,12 @@ void MODAblated::evolve(const std::string& filename, const std::string& data_fil
 
     // Compute the origin for the hypervolume computation
     YAML::Node config = YAML::LoadFile(filename);
-    const int lowerBound = this->population[0].getAgents().size()
-                                    * config["episode"]["length"].as<int>()
-                                    * config["MOREPDomain"]["penalty"].as<int>()
-                                    * config["evolutionary"]["numberOfEpisodes"].as<int>() - 1;
+    int numagents = this->population[0].getAgents().size();
+    int pen = envs[0].getPenalty();
+    const double lowerBound = numagents
+                                * config["episode"]["length"].as<int>()
+                                * pen
+                                * config["evolutionary"]["numberOfEpisodes"].as<int>() - 1;
     
     // How many offsprings does the generation create?
     const int numberOfOffsprings = config["evolutionary"]["numberOfOffsprings"].as<int>();

@@ -383,6 +383,10 @@ std::pair<int, int> MOREPDomain::getDimensions() {
     return std::make_pair(xLength, yLength);
 }
 
+int MOREPDomain::getPenalty() {
+    return this->penalty;
+}
+
 void MOREPDomain::reset() {
     pois.clear();
     xLength = 0;
