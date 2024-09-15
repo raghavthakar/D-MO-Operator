@@ -1,7 +1,6 @@
 MOREPDomain:
   differentEnvs: false # New env config every episode or not?
   numberOfPOIs: 8
-  numberOfClassIds: 2
   dimensions:
     xLength: 160
     yLength: 160
@@ -17,6 +16,10 @@ MOREPDomain:
   observableWindow: [0, 25] # Timesteps at which POI appears and disappears respectively
   rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
   exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
+
+  team:
+    numberOfAgents: 10
+# --------------------------------------
 
 
   POIs:
@@ -114,12 +117,42 @@ MOREPDomain:
    
 # --------------------------------------
 
-episode:
-  length: 240
+MOBPDomain:
+  Sections:
+    - id: 0
+      maleTourists: 8
+      femaleTourists: 3
+      psi: 3
+      attraction: false
+    
+    - id: 1
+      maleTourists: 0
+      femaleTourists: 0
+      psi: 3
+      attraction: false
+    
+    - id: 2
+      maleTourists: 9
+      femaleTourists: 4
+      psi: 3
+      attraction: true
+    
+    - id: 3
+      maleTourists: 0
+      femaleTourists: 0
+      psi: 3
+      attraction: false
+    
+    - id: 4
+      maleTourists: 0
+      femaleTourists: 0
+      psi: 3
+      attraction: false
+
 # --------------------------------------
 
-team:
-  numberOfAgents: 10
+episode:
+  length: 2 # starting position -> reward -> move -> reward
 # --------------------------------------
 
 agent:
@@ -150,5 +183,6 @@ evolutionary:
 
 experiment:
   genLogInterval: 25 # Log info about algo every how many generations?
-  domain: "MOREPDomain"
+  domain: "MOBPDomain" # or "MOBPDomain" or "MOREPDomain"
+  numberOfObjectives: 2
 # --------------------------------------

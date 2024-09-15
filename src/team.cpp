@@ -1,6 +1,5 @@
 #include "team.h"
 #include "environment.h"
-#include "policy.h"
 #include <vector>
 #include <unordered_set>
 #include <utility>
@@ -25,90 +24,223 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 
 // = operator
 
-// Constructor
+// Constructor for rover
 Agent::Agent(const std::string& config_filename) {
+    YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
+
+    this->whichDomain = config["experiment"]["domain"].as<std::string>();
+
+    const YAML::Node& agent_config = config["agent"]; // Agent config info
+
+    if (this->whichDomain == rover.whichDomain){
+        this->rover = MOREPBaseAgent(agent_config["startingX"].as<int>(),
+            agent_config["startingY"].as<int>(),
+            agent_config["startingX"].as<int>(),
+            agent_config["startingY"].as<int>(),
+            agent_config["maxStepSize"].as<int>(),
+            agent_config["observationRadius"].as<double>(),
+            agent_config["numberOfSensors"].as<int>(),
+            config["experiment"]["numberOfObjectives"].as<int>(),
+            agent_config["nnWeightMin"].as<double>(),
+            agent_config["nnWeightMax"].as<double>(),
+            agent_config["noiseMean"].as<double>(),
+            agent_config["noiseStdDev"].as<double>());
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
+}
+
+// constructor for beach
+Agent::Agent(unsigned short int pos_, std::string gender_, unsigned short int startingPos_, const std::string& config_filename) {
     YAML::Node config = YAML::LoadFile(config_filename); // Parse YAML from file
     const YAML::Node& agent_config = config["agent"]; // Agent config info
 
-    this->rover = MOREPBaseAgent(agent_config["startingX"].as<int>(),
-        agent_config["startingY"].as<int>(),
-        agent_config["startingX"].as<int>(),
-        agent_config["startingY"].as<int>(),
-        agent_config["maxStepSize"].as<int>(),
-        agent_config["observationRadius"].as<double>(),
-        agent_config["numberOfSensors"].as<int>(),
-        config["MOREPDomain"]["numberOfClassIds"].as<int>(),
-        agent_config["nnWeightMin"].as<double>(),
-        agent_config["nnWeightMax"].as<double>(),
-        agent_config["noiseMean"].as<double>(),
-        agent_config["noiseStdDev"].as<double>());
+    this->whichDomain = config["experiment"]["domain"].as<std::string>();
+
+    // convert string gender to unsigned short int
+    unsigned short int gender_int;
+    if (gender_ == "male")
+        gender_int = 0;
+    else if (gender_ == "female")
+        gender_int = 1;
+
+    if (this->whichDomain == beachPerson.whichDomain){
+        this->beachPerson = MOBPBaseAgent(pos_, 
+                                gender_int, 
+                                startingPos_,
+                                agent_config["nnWeightMin"].as<double>(),
+                                agent_config["nnWeightMax"].as<double>(),
+                                agent_config["noiseMean"].as<double>(),
+                                agent_config["noiseStdDev"].as<double>());
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // copy constructor
 Agent::Agent(const Agent& other) {
-    this->rover = MOREPBaseAgent(other.rover);
+    this->whichDomain = other.whichDomain;
+
+    if (this->whichDomain == rover.whichDomain){
+        this->rover = MOREPBaseAgent(other.rover);
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        this->beachPerson = MOBPBaseAgent(other.beachPerson);
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
+    
 }
 
 // Function to move the agent by dx, dy (within maximum step size)
 void Agent::move(std::vector<double> delta, Environment environment) {
-    this->rover.move(std::make_pair(delta[0], delta[1]), environment);
+    if (this->whichDomain == rover.whichDomain){
+        assert(delta.size() == 2 && "Rover delta must be 2!");
+        this->rover.move(std::make_pair(delta[0], delta[1]), environment);
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        assert(delta.size() == 1 && "Beach delta cannot be more than 1 element!");
+        this->beachPerson.move(delta[0], environment);
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // Function to set the agent at the starting position and clear its observations
 void Agent::reset() {
-    this->rover.reset(); 
+    if (this->whichDomain == rover.whichDomain){
+        this->rover.reset();
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        this->beachPerson.reset();
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // Adds noise to the contained policy
 void Agent::addNoiseToPolicy() {
-    this->rover.addNoiseToPolicy();
+    if (this->whichDomain == rover.whichDomain){
+        this->rover.addNoiseToPolicy();
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        this->beachPerson.addNoiseToPolicy();
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // Observe and create state vector
 // Assumes that POIs have classID 0, 1, 2....
 std::vector<double> Agent::observe(Environment environment, std::vector<std::vector<double>> agentPositions) {
-    // Convert std::vector<std::vector<double>> to std::vector<std::pair<double, double>>
-    std::vector<std::pair<double, double>> convertedPositions;
-    convertedPositions.reserve(agentPositions.size());
+    if (this->whichDomain == rover.whichDomain){
+        // Convert std::vector<std::vector<double>> to std::vector<std::pair<double, double>>
+        std::vector<std::pair<double, double>> convertedPositions;
+        convertedPositions.reserve(agentPositions.size());
 
-    for (const auto& position : agentPositions) {
-        // Assuming each inner vector has exactly 2 elements
-        if (position.size() == 2) {
-            convertedPositions.emplace_back(position[0], position[1]);
-        } else {
-            throw std::runtime_error("Each position vector must have exactly 2 elements.");
+        for (const auto& position : agentPositions) {
+            // Assuming each inner vector has exactly 2 elements
+            if (position.size() == 2) {
+                convertedPositions.emplace_back(position[0], position[1]);
+            } else {
+                throw std::runtime_error("Each position vector must have exactly 2 elements.");
+            }
         }
-    }
 
-    return this->rover.observe(environment, convertedPositions);
+        return this->rover.observe(environment, convertedPositions);
+    }
+    else if (this->whichDomain == beachPerson.whichDomain) {
+        return std::vector<double>(1, this->beachPerson.observe());
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // forward pass through the policy
 std::vector<double> Agent::forward(const std::vector<double>& input) {
-    auto output = this->rover.forward(input);
-    return {output.first, output.second};
+    if (this->whichDomain == rover.whichDomain){
+        auto output = this->rover.forward(input);
+        return {output.first, output.second};
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        short int output = this->beachPerson.forward(input);
+        return std::vector<double>(1, output);
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 // Function to get the current position of the agent
 std::vector<double> Agent::getPosition() const {
-    auto position = this->rover.getPosition();
-    return {position.first, position.second};
-}
-
-int Agent::getMaxStepSize() const {
-    return this->rover.getMaxStepSize();
+    if (this->whichDomain == rover.whichDomain){
+        auto position = this->rover.getPosition();
+        return {position.first, position.second};
+    }
+    else if (this->whichDomain == beachPerson.whichDomain)
+    {
+        auto position = this->beachPerson.getPosition();
+        return {(double)position};
+    }
+    else {
+        std::cout<<"Domain is unrecognised!";
+        exit(1);
+    }
 }
 
 Team::Team(const std::string& filename, int id) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
 
-    const YAML::Node& team_config = config["team"]; // Team config info
-    const YAML::Node& agent_config = config["agent"]; // Agent config info
+    this->whichDomain = config["experiment"]["domain"].as<std::string>();
 
-    bool randomStartPosition = agent_config["randomStartPosition"].as<bool>(); // Are the start pos random?
 
-    for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
-        agents.emplace_back(filename); // Create agent object and store in vector
+    // initialise agents according to the experiment domain
+    if (this->whichDomain == "MOREPDomain") {
+        const YAML::Node& team_config = config["MOREPDomain"]["team"]; // Team config info
+        for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
+            agents.emplace_back(filename); // Create agent object and store in vector
+        }
+    }
+    // heterogeneous beach agents require work for initialisation
+    else if (this->whichDomain == "MOBPDomain") {
+        const YAML::Node& MOBP_config = config["MOBPDomain"];
+
+        for (const auto& section : MOBP_config["Sections"]) {
+            // get section info from the config
+            int maleTourists = section["maleTourists"].as<int>();
+            int femaleTourists = section["femaleTourists"].as<int>();
+            int id = section["id"].as<int>();
+            
+            // initialise male agents at this section
+            for (int i = 0; i < maleTourists; i++) {
+                agents.emplace_back(id, "male", id, filename);
+            }
+
+            // initialise female agents at this section
+            for (int i = 0; i < femaleTourists; i++) {
+                agents.emplace_back(id, "female", id, filename);
+            }
+        }
     }
 
     this->id = id; // Store the team id
@@ -119,10 +251,9 @@ Team::Team(const std::string& filename, int id) {
 Team::Team(const std::string& filename, std::vector<Agent> agents, int id) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
 
-    const YAML::Node& team_config = config["team"]; // Team config info
-    const YAML::Node& agent_config = config["agent"]; // Agent config info
+    this->whichDomain = config["experiment"]["domain"].as<std::string>();
 
-    bool randomStartPosition = agent_config["randomStartPosition"].as<bool>(); // Are the start pos random?
+    const YAML::Node& team_config = config["team"]; // Team config info
 
     this->agents = agents;
 
@@ -158,14 +289,6 @@ std::vector<std::vector<double>> Team::simulate(const std::string& filename, Env
     int startingX, startingY;
 
     for(auto& agent : agents) {
-        if (randomStartPosition == true) {
-            startingX = rand()%(environment.getDimensions().first+1); // Get random within limits
-            startingY = rand()%(environment.getDimensions().second+1);
-        } else {
-            startingX = agent_config["startingX"].as<int>(); // Read from config
-            startingY = agent_config["startingY"].as<int>();
-        }
-
         // reset the agents at the starting positions and clear the observations
         agent.reset();
     }
@@ -184,13 +307,30 @@ std::vector<std::vector<double>> Team::simulate(const std::string& filename, Env
         for (auto& agent : agents) {
             agentPositions.push_back(agent.getPosition());
         }
-
         // push these agent positions to the teamTrajectory
         teamTrajectory.push_back(agentPositions);
 
-        // compute the rewards for these agent positions
-        rewardHistory.push_back(environment.getRewards(agentPositions, stepNumber));
-        // std::cout<<"The reward is: "<<rewardHistory.back()<<std::endl;
+        std::vector<unsigned short int> agentTypes;
+        if (this->whichDomain == "MOBPDomain") { // if beach domain
+            for (auto& agent : agents) {
+                agentTypes.push_back(agent.beachPerson._gender); // need to send in the agent types as well
+            }
+
+            rewardHistory.push_back(environment.getRewards(agentPositions, agentTypes, stepNumber));
+        }
+        else if (this->whichDomain == "MOREPDomain") { // for the rover domain only the agent poisitions are neneded
+            // compute the rewards for these agent positions
+            rewardHistory.push_back(environment.getRewards(agentPositions, stepNumber));
+        }
+        else {
+            std::cout<<"Domain is unrecognised!";
+            exit(1);
+        }
+
+        // avoid the last extra simulation step if in the last iteration of the loop
+        if (stepNumber == episodeLength - 1) {
+            break;
+        }
 
         // Get the observation for each agent and feed it to its network to get the move
         std::vector<std::vector<double>> agentDeltas;
@@ -208,10 +348,14 @@ std::vector<std::vector<double>> Team::simulate(const std::string& filename, Env
 }
 
 // re-evaluate the rewards for the team, given the counterfactual trajectory
-// TODO counterfactual evaluation find the rewards for that team
 std::vector<std::vector<double>> Team::replayWithCounterfactual(const std::string& filename, Environment environment, const std::string& counterfactualType) {
     // get the counterfactual trajectory
-    std::vector<std::vector<double>> counterfactualTrajectory = environment.generateCounterfactualTrajectory(filename, counterfactualType, this->teamTrajectory.size());
+    std::vector<std::vector<double>> counterfactualTrajectory;
+
+    // counterfactual trajectories are identical for all rovers
+    if (this->whichDomain == this->agents[0].rover.whichDomain) {
+        counterfactualTrajectory = environment.generateCounterfactualTrajectory(filename, counterfactualType, this->teamTrajectory.size());
+    }
 
     std::vector<std::vector<double>> replayRewardsWithCounterfactuals; // Stores the replay rewards with counterfactual replacements
     std::vector<std::vector<std::vector<double>>> workingTeamTrajectory; // store the team trajectory copy to modify
@@ -219,11 +363,27 @@ std::vector<std::vector<double>> Team::replayWithCounterfactual(const std::strin
     for (int agentNum=0; agentNum<this->teamTrajectory[0].size(); agentNum++) { // loop through agents
         workingTeamTrajectory = this->teamTrajectory;
 
+        // but for each beach agent the starting position is different
+        if (this->whichDomain == this->agents[agentNum].beachPerson.whichDomain) {
+            counterfactualTrajectory = environment.generateCounterfactualTrajectory(filename, counterfactualType, this->teamTrajectory.size(), agents[agentNum].beachPerson._startingPos);
+        }
+
         // Loop through the working trajectory, replacing the agent position at that timestep with position from counterfactual trajectory
         std::vector<double> episodeCounterfactualRewards = environment.initialiseEpisodeReward(filename); // Sum of timestep rewards 
         for(int timestep = 0; timestep < workingTeamTrajectory.size(); timestep++) {
             workingTeamTrajectory[timestep][agentNum] = counterfactualTrajectory[timestep]; // repalce the agent's position with counterfactual
-            std::vector<double> timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
+            std::vector<double> timestepRewards;
+
+            if (this->whichDomain == this->agents[0].rover.whichDomain) {
+                timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], timestep); // get the rewards for the team with counterfactual agent at this timestep
+            }
+            else if (this->whichDomain == this->agents[0].beachPerson.whichDomain) {
+                std::vector<unsigned short int> agentTypes;
+                for (auto& agent : this->agents) {
+                    agentTypes.push_back(agent.beachPerson._gender); // need to send in the agent types as well
+                }
+                timestepRewards = environment.getRewards(workingTeamTrajectory[timestep], agentTypes, timestep); // get the rewards for the team with counterfactual agent at this timestep
+            }
             
             for(int rewIndex = 0; rewIndex < timestepRewards.size(); rewIndex++) {
                 episodeCounterfactualRewards[rewIndex] += timestepRewards[rewIndex]; // add tiemstep rewards to the cumulative episode rewards

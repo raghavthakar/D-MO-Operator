@@ -1,7 +1,6 @@
 #include "NSGA_II.h"
 #include "evolutionary_utils.h"
 #include "environment.h"
-#include "policy.h"
 #include "team.h"
 #include <yaml-cpp/yaml.h>
 #include <limits>
@@ -38,10 +37,12 @@ void NSGA_II::evolve(const std::string& filename, const std::string& data_filena
 
     // Compute the origin for the hypervolume computation
     YAML::Node config = YAML::LoadFile(filename);
-    const int lowerBound = config["team"]["numberOfAgents"].as<int>()
-                                    * config["episode"]["length"].as<int>()
-                                    * config["MOREPDomain"]["penalty"].as<int>()
-                                    * config["evolutionary"]["numberOfEpisodes"].as<int>() - 1;
+    int numagents = this->population[0].getAgents().size();
+    int pen = envs[0].getPenalty();
+    const double lowerBound = numagents
+                                * config["episode"]["length"].as<int>()
+                                * pen
+                                * config["evolutionary"]["numberOfEpisodes"].as<int>() - 1;
 
     // How many generations to do this for?
     const int numberOfGenerations = config["evolutionary"]["numberOfGenerations"].as<int>();

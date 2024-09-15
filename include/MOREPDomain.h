@@ -37,6 +37,8 @@ private:
     int penalty; // Penalty at each timestep
 
 public:
+    std::string whichDomain;
+    MOREPDomain();
     // Method to load configuration from YAML file
     void loadConfig(const std::string& filename);
 
@@ -59,6 +61,9 @@ public:
 
     // intiialise zero reward for an episode
     std::vector<double> initialiseEpisodeReward(const std::string& config_filename);
+
+    // get the a=penelty of the environment
+    int getPenalty();
 
     // Method to print information about loaded POIs
     void printInfo() const;

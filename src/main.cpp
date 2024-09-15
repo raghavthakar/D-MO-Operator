@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
     // Extract filename from command-line arguments
     std::string project_root = "/home/thakarr/D-MO-Operator/";
     std::string config_filename = project_root + "config/config.yaml";
-    std::string data_filename_root = project_root + "experiments/data/env_split_data/"; // Default data filename with current date and time
+    std::string data_filename_root = project_root + "experiments/data/mobpd_test_data/"; // Default data filename with current date and time
 
     // Start the timer
     auto start = std::chrono::steady_clock::now();
@@ -57,14 +57,14 @@ int main(int argc, char* argv[]) {
         configSrc.close();
         configDst.close();
 
-        // NSGA_II nsga(config_filename);
-        // nsga.evolve(config_filename, data_filename_root + currentDateTimeString + "_NSGA_II_.csv");
         MOD evo(config_filename);
         evo.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_.csv");
-        MODAblated abl(config_filename);
-        abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_ABLATED_.csv");
         MODTeamAblated team_abl(config_filename);
         team_abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_TEAM_ABLATED_.csv");
+        MODAblated abl(config_filename);
+        abl.evolve(config_filename, data_filename_root + currentDateTimeString + "_MOD_ABLATED_.csv");
+        NSGA_II nsga(config_filename);
+        nsga.evolve(config_filename, data_filename_root + currentDateTimeString + "_NSGA_II_.csv");
     }
     
 

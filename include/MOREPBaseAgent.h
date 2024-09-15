@@ -1,10 +1,11 @@
 #ifndef MOREPBASEAGENT_H
 #define MOREPBASEAGENT_H
 
-#include "policy.h"
+#include "MOREPPolicy.h"
 #include "environment.h"
 #include <utility>
 #include <vector>
+#include <string>
 
 class MOREPBaseAgent {
 public:
@@ -18,10 +19,12 @@ public:
     double nnWeightMin; // Max and min weights of the policy weights
     double nnWeightMax;
     double noiseMean; // POlicy noise mutate's mean
-    double noiseStdDev; // Policy noise mutate's stddev
+    double noiseStdDev; // MOREPPolicy noise mutate's stddev
 
-    // Policy object that stores the MOREPBaseAgent's neural network
-    Policy policy;
+    std::string whichDomain;
+
+    // MOREPPolicy object that stores the MOREPBaseAgent's neural network
+    MOREPPolicy policy;
 
     // Constructor
     MOREPBaseAgent();
