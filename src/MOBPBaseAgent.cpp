@@ -135,7 +135,7 @@ MOBPBaseAgent::MOBPBaseAgent(const MOBPBaseAgent& other) :
     }
 
 // update the agent's position respecting the env constraints
-void MOBPBaseAgent::move(unsigned short int delta, Environment environment) {
+void MOBPBaseAgent::move(short int delta, Environment environment) {
     unsigned short int newPos = environment.moveAgent(this->_pos, delta);
     this->_pos = newPos;
 }

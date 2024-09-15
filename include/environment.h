@@ -22,7 +22,7 @@ public:
     std::vector<double> getRewards(std::vector<std::vector<double>> agentPositions, int stepNumber);
     std::vector<double> getRewards(std::vector<std::vector<double>> agentPositions, std::vector<unsigned short int> agentTypes, int stepNumber);
     std::pair<double, double> moveAgent(std::pair<double, double> currentPos, std::pair<double, double> delta, double maxStepSize);
-    unsigned short int moveAgent(unsigned short int currentPos, unsigned short int delta);
+    unsigned short int moveAgent(unsigned short int currentPos, short int delta);
     // observations of an agent
     std::vector<double> getAgentObservations(std::pair<double, double> agentPos, int numberOfSensors, double observationRadius, std::vector<std::pair<double, double>> agentPositions);
     // generate a counterfactual trajectory 

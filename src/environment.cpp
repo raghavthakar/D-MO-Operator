@@ -96,7 +96,7 @@ std::pair<double, double> Environment::moveAgent(std::pair<double, double> curre
 
 // take in an agent's position and return new position based on environmental limits
 // overloaded for MOBP
-unsigned short int Environment::moveAgent(unsigned short int currentPos, unsigned short int delta) {
+unsigned short int Environment::moveAgent(unsigned short int currentPos, short int delta) {
     if (this->whichDomain == this->beach_env.whichDomain) {
         return this->beach_env.moveAgent(currentPos, delta);
     }

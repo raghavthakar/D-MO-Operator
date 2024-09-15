@@ -20,7 +20,7 @@ double BeachSection::_getLocalCapacityReward(std::vector<unsigned short int> age
             numOccupyingAgents++;
     }
 
-    auto localCapReward = (numOccupyingAgents) * (std::exp(- numOccupyingAgents / this->_psi));
+    double localCapReward = numOccupyingAgents * std::exp(-static_cast<double>(numOccupyingAgents) / this->_psi);
     return localCapReward;
 }
 

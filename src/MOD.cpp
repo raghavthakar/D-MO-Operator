@@ -122,19 +122,19 @@ void MOD::evolve(const std::string& filename, const std::string& data_filename) 
 
         // --------------------DATA LOGGING------------------------
         // initialise an empty data dict with just the keys (used for logging data)
-        // DataArranger dataHelper(data_filename);
-        // int numinds = population.size();
-        // for (auto ind : population) {
-        //     dataHelper.clear();
-        //     dataHelper.addData("gen", gen);
-        //     dataHelper.addData("individual_id", ind.id);
-        //     dataHelper.addData("fitness", ind.fitness);
-        //     dataHelper.addData("difference_impacts", ind.differenceEvaluations);
-        //     dataHelper.addData("nondomination_level", ind.nondominationLevel);
-        //     dataHelper.addData("crowding_distance", ind.crowdingDistance);
-        //     dataHelper.addData("trajectories", ind.getTeamTrajectoryAsString());
-        //     dataHelper.write();
-        // }
+        DataArranger dataHelper(data_filename);
+        int numinds = population.size();
+        for (auto ind : population) {
+            dataHelper.clear();
+            dataHelper.addData("gen", gen);
+            dataHelper.addData("individual_id", ind.id);
+            dataHelper.addData("fitness", ind.fitness);
+            dataHelper.addData("difference_impacts", ind.differenceEvaluations);
+            dataHelper.addData("nondomination_level", ind.nondominationLevel);
+            dataHelper.addData("crowding_distance", ind.crowdingDistance);
+            dataHelper.addData("trajectories", ind.getTeamTrajectoryAsString());
+            dataHelper.write();
+        }
         // --------------------------------------------------------
 
         // 3. Each individual on each pareto front now has an updated difference evaluation

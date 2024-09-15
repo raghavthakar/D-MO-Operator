@@ -35,7 +35,7 @@ public:
     MOBPBaseAgent();
     MOBPBaseAgent(unsigned short int pos_, unsigned short int gender_, unsigned short int startingPos_, double nnWeightMin_, double nnWeightMax_, double noiseMean_, double noiseStdDev_);
     MOBPBaseAgent(const MOBPBaseAgent& other);
-    void move(unsigned short int delta, Environment environment);
+    void move(short int delta, Environment environment);
     void reset();
     unsigned short int getPosition() const;
     short int forward(const std::vector<double>& input);

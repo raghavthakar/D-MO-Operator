@@ -116,8 +116,8 @@ MOREPDomain:
 MOBPDomain:
   Sections:
     - id: 0
-      maleTourists: 5
-      femaleTourists: 5
+      maleTourists: 17
+      femaleTourists: 7
       psi: 3
       attraction: false
     
@@ -128,14 +128,14 @@ MOBPDomain:
       attraction: false
     
     - id: 2
-      maleTourists: 0
-      femaleTourists: 0
+      maleTourists: 18
+      femaleTourists: 8
       psi: 3
       attraction: true
     
     - id: 3
-      maleTourists: 5
-      femaleTourists: 5
+      maleTourists: 0
+      femaleTourists: 0
       psi: 3
       attraction: false
     
