@@ -17,6 +17,10 @@ MOREPDomain:
   rewardOnce: false # If POI should only reward the first timestep it is successfully observed, and deactivate afterwards
   exactCouplingNeeded: false # if the number of agents needs to be exactly equal to coupling, an dcannot be greater to generate rewards
 
+  team:
+    numberOfAgents: 10
+# --------------------------------------
+
 
   POIs:
     - id: 0
@@ -116,8 +120,8 @@ MOREPDomain:
 MOBPDomain:
   Sections:
     - id: 0
-      maleTourists: 17
-      femaleTourists: 7
+      maleTourists: 8
+      femaleTourists: 3
       psi: 3
       attraction: false
     
@@ -128,8 +132,8 @@ MOBPDomain:
       attraction: false
     
     - id: 2
-      maleTourists: 18
-      femaleTourists: 8
+      maleTourists: 9
+      femaleTourists: 4
       psi: 3
       attraction: true
     
@@ -148,11 +152,7 @@ MOBPDomain:
 # --------------------------------------
 
 episode:
-  length: 2
-# --------------------------------------
-
-team:
-  numberOfAgents: 10
+  length: 2 # starting position -> reward -> move -> reward
 # --------------------------------------
 
 agent:

@@ -212,11 +212,11 @@ Team::Team(const std::string& filename, int id) {
     YAML::Node config = YAML::LoadFile(filename); // Parse YAML from file
 
     this->whichDomain = config["experiment"]["domain"].as<std::string>();
-    const YAML::Node& team_config = config["team"]; // Team config info
 
 
     // initialise agents according to the experiment domain
     if (this->whichDomain == "MOREPDomain") {
+        const YAML::Node& team_config = config["MOREPDomain"]["team"]; // Team config info
         for (int i = 0; i < team_config["numberOfAgents"].as<int>(); i++) {
             agents.emplace_back(filename); // Create agent object and store in vector
         }
@@ -325,6 +325,11 @@ std::vector<std::vector<double>> Team::simulate(const std::string& filename, Env
         else {
             std::cout<<"Domain is unrecognised!";
             exit(1);
+        }
+
+        // avoid the last extra simulation step if in the last iteration of the loop
+        if (stepNumber == episodeLength - 1) {
+            break;
         }
 
         // Get the observation for each agent and feed it to its network to get the move

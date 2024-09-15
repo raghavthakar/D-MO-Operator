@@ -40,7 +40,7 @@ void MOD::evolve(const std::string& filename, const std::string& data_filename) 
 
     // Compute the origin for the hypervolume computation
     YAML::Node config = YAML::LoadFile(filename);
-    const double lowerBound = config["team"]["numberOfAgents"].as<int>()
+    const double lowerBound = this->population[0].getAgents().size()
                                     * config["episode"]["length"].as<int>()
                                     * config["MOREPDomain"]["penalty"].as<int>()
                                     * config["evolutionary"]["numberOfEpisodes"].as<int>() - 1;
