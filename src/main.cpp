@@ -20,7 +20,6 @@ std::string getCurrentDateTimeString() {
 }
 
 int main(int argc, char* argv[]) {
-
     // Start the timer
     auto start = std::chrono::steady_clock::now();
     
