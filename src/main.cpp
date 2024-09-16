@@ -20,33 +20,34 @@ std::string getCurrentDateTimeString() {
 }
 
 int main(int argc, char* argv[]) {
-    // Extract filename from command-line arguments
-    std::string project_root = "/home/thakarr/D-MO-Operator/";
-    std::string config_filename = project_root + "config/config.yaml";
-    std::string data_filename_root = project_root + "experiments/data/mobpd_test_data/"; // Default data filename with current date and time
-
     // Start the timer
     auto start = std::chrono::steady_clock::now();
     
     if (argc == 4) {
-        config_filename = argv[1];
-        std::string data_filename = argv[2];
+        std::string config_filename = argv[1];
+        std::string data_filename_prefix = argv[2];
         std::string alg = argv[3];
+
+        auto currentDateTimeString = getCurrentDateTimeString();
 
         if (alg == "nsga") {
             NSGA_II nsga(config_filename);
-            nsga.evolve(config_filename, data_filename);
+            nsga.evolve(config_filename, data_filename_prefix + alg + currentDateTimeString + ".csv");
         } else if (alg == "mod") {
             MOD evo(config_filename);
-            evo.evolve(config_filename, data_filename);
+            evo.evolve(config_filename, data_filename_prefix + alg + currentDateTimeString + ".csv");
         } else if (alg == "mod_abl") {
             MODAblated abl(config_filename);
-            abl.evolve(config_filename, data_filename);
-        // } else if (alg == "mod_team_abl") {
-        //     MODTeamAblated team_abl(config_filename);
-        //     team_abl.evolve(config_filename, data_filename);
+            abl.evolve(config_filename, data_filename_prefix + alg + currentDateTimeString + ".csv");
+        } else if (alg == "mod_team_abl") {
+            MODTeamAblated team_abl(config_filename);
+            team_abl.evolve(config_filename, data_filename_prefix + alg + currentDateTimeString + ".csv");
         }
     } else {
+        // Extract filename from command-line arguments
+        std::string project_root = "/home/thakarr/D-MO-Operator/";
+        std::string config_filename = project_root + "config/config.yaml";
+        std::string data_filename_root = project_root + "experiments/data/mobpd_test_data/"; // Default data filename with current date and time
         // create a copy of the config file
         auto currentDateTimeString = getCurrentDateTimeString();
 
