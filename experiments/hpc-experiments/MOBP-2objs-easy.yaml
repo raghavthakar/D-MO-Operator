@@ -122,31 +122,31 @@ MOBPDomain:
     - id: 0
       maleTourists: 8
       femaleTourists: 3
-      psi: 3
+      psi: 2
       attraction: false
     
     - id: 1
       maleTourists: 0
       femaleTourists: 0
-      psi: 3
+      psi: 2
       attraction: false
     
     - id: 2
       maleTourists: 9
       femaleTourists: 4
-      psi: 3
+      psi: 2
       attraction: true
     
     - id: 3
       maleTourists: 0
       femaleTourists: 0
-      psi: 3
+      psi: 2
       attraction: false
     
     - id: 4
       maleTourists: 0
       femaleTourists: 0
-      psi: 3
+      psi: 2
       attraction: false
 
 # --------------------------------------
@@ -171,7 +171,7 @@ agent:
 evolutionary:
   populationSize: 100 # Will decide the number of joint policies in the population
   numberOfEpisodes: 1 # How many environments an individiual in the generation will be tested on
-  numberOfGenerations: 300
+  numberOfGenerations: 1000
   numberOfOffsprings: 100 # How many offsprings does the population create in every generation?
   numberOfParents: 100 # How many individuals are used to make these offsprings?
   counterfactualType: "static" # Counterfactial agent simply stays in the start position throughout

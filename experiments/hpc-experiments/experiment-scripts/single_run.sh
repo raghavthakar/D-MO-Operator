@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=0-00:00:55
+#SBATCH --time=0-12:00:00
 #SBATCH --constraint=skylake
 #SBATCH --mem=16G
 #SBATCH -c 8
 
-module load conda
+# module load conda
 
-mkdir /nfs/stak/users/thakarr/hpc-share/hehe
+/home/thakarr/D-MO-Operator/build/MOD "/home/thakarr/D-MO-Operator/experiments/hpc-experiments/MOBP-2objs-easy.yaml" "/home/thakarr/D-MO-Operator/experiments/hpc-experiments/data/MOBP-2objs-easy" "mod"
