@@ -6,4 +6,4 @@
 
 # module load conda
 
-/home/thakarr/D-MO-Operator/build/MOD "/home/thakarr/D-MO-Operator/experiments/hpc-experiments/MOBP-2objs-easy.yaml" "/home/thakarr/D-MO-Operator/experiments/hpc-experiments/data/MOBP-2objs-easy" "mod"
+/home/thakarr/D-MO-Operator/build/MOD "/home/thakarr/D-MO-Operator/experiments/hpc-experiments/MOREP-2objs-easy.yaml" "/home/thakarr/D-MO-Operator/experiments/hpc-experiments/data/MOREP-2objs-easy" "mod"

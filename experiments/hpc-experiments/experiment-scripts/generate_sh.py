@@ -33,9 +33,11 @@ def generate_bash_scripts(time, env, alg, num_scripts, output_dir):
 
 # Example usage:
 time = "0-12:00:00"  # Set the time
-env = "MOBP-2objs-easy"
-alg = "mod"
-num_scripts = 5  # Number of bash scripts to generate
+envs = ["MOBP-2objs-easy", "MOBP-2objs-hard", "MOREP-2objs-easy", "MOREP-2objs-hard"]
+algs = ["mod", "mod_abl", "mod_teama_abl", "nsga"]
+num_scripts = 10  # Number of bash scripts to generate
 output_dir = "experiment-scripts/bash_scripts"  # Directory to save the scripts
 
-generate_bash_scripts(time, env, alg, num_scripts, output_dir)
+for env in envs:
+    for alg in algs:
+        generate_bash_scripts(time, env, alg, num_scripts, output_dir)

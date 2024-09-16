@@ -16,8 +16,7 @@ void Environment::loadConfig(const std::string& filename) {
     else if (this->whichDomain == this->beach_env.whichDomain)
         this->beach_env = MOBPDomain(filename);
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -50,8 +49,7 @@ std::vector<double> Environment::getRewards(std::vector<std::vector<double>> age
         return convertedEpisodeReward;
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
     
 }
@@ -78,8 +76,7 @@ std::vector<double> Environment::getRewards(std::vector<std::vector<double>> age
         return (this->beach_env.getRewards(positionVector, agentTypes));
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -89,8 +86,7 @@ std::pair<double, double> Environment::moveAgent(std::pair<double, double> curre
         return this->rover_env.moveAgent(currentPos,delta, maxStepSize);
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -101,8 +97,7 @@ unsigned short int Environment::moveAgent(unsigned short int currentPos, short i
         return this->beach_env.moveAgent(currentPos, delta);
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -120,8 +115,7 @@ std::vector<std::vector<double>> Environment::generateCounterfactualTrajectory(c
         return this->rover_env.generateCounterfactualTrajectory(config_filename, counterfactualType, trajectoryLength);
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -147,22 +141,20 @@ std::vector<std::vector<double>> Environment::generateCounterfactualTrajectory(c
         return result;
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
 // initialise zero rewards for an episode // intiialise zero reward for an episode
 std::vector<double> Environment::initialiseEpisodeReward(const std::string& config_filename) {
-    if (this->whichDomain == this->beach_env.whichDomain) {
+    if (this->whichDomain == this->rover_env.whichDomain) {
         return this->rover_env.initialiseEpisodeReward(config_filename);
     }
     else if (this->whichDomain == this->beach_env.whichDomain) {
         return this->beach_env.initialiseEpisodeReward(config_filename);
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -180,7 +172,6 @@ int Environment::getPenalty() {
         return 0;
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }

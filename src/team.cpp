@@ -47,8 +47,7 @@ Agent::Agent(const std::string& config_filename) {
             agent_config["noiseStdDev"].as<double>());
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -76,8 +75,7 @@ Agent::Agent(unsigned short int pos_, std::string gender_, unsigned short int st
                                 agent_config["noiseStdDev"].as<double>());
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -93,8 +91,7 @@ Agent::Agent(const Agent& other) {
         this->beachPerson = MOBPBaseAgent(other.beachPerson);
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
     
 }
@@ -111,8 +108,7 @@ void Agent::move(std::vector<double> delta, Environment environment) {
         this->beachPerson.move(delta[0], environment);
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -126,8 +122,7 @@ void Agent::reset() {
         this->beachPerson.reset();
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -141,8 +136,7 @@ void Agent::addNoiseToPolicy() {
         this->beachPerson.addNoiseToPolicy();
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -169,8 +163,7 @@ std::vector<double> Agent::observe(Environment environment, std::vector<std::vec
         return std::vector<double>(1, this->beachPerson.observe());
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -186,8 +179,7 @@ std::vector<double> Agent::forward(const std::vector<double>& input) {
         return std::vector<double>(1, output);
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -203,8 +195,7 @@ std::vector<double> Agent::getPosition() const {
         return {(double)position};
     }
     else {
-        std::cout<<"Domain is unrecognised!";
-        exit(1);
+        throw std::runtime_error("Domain is unrecognized!");
     }
 }
 
@@ -323,8 +314,7 @@ std::vector<std::vector<double>> Team::simulate(const std::string& filename, Env
             rewardHistory.push_back(environment.getRewards(agentPositions, stepNumber));
         }
         else {
-            std::cout<<"Domain is unrecognised!";
-            exit(1);
+            throw std::runtime_error("Domain is unrecognized!");
         }
 
         // avoid the last extra simulation step if in the last iteration of the loop
