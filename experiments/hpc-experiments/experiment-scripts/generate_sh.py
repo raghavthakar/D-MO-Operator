@@ -1,6 +1,8 @@
 import os
 
-project_home = "/home/thakarr/D-MO-Operator/experiments/hpc-experiments/"
+# /nfs/ftak/users/thakarr/hpc-share/AAMAS24/D-MO-Operator/experiments/hpc-experiments/experiment-scripts
+
+project_home = "/nfs/stak/users/thakarr/hpc-share/AAMAS24/D-MO-Operator/experiments/hpc-experiments/"
 
 def generate_bash_scripts(time, env, alg, num_scripts, output_dir):
     # Create the full path to the output directory inside the project_home
@@ -20,11 +22,14 @@ def generate_bash_scripts(time, env, alg, num_scripts, output_dir):
         with open(script_path, 'w') as file:
             file.write("#!/bin/bash\n")
             file.write(f"#SBATCH --time={time}\n")
+            file.write("#SBATCH -p share\n")
             file.write("#SBATCH --constraint=skylake\n")
             file.write("#SBATCH --mem=16G\n")
-            file.write("#SBATCH -c 8\n\n")
+            file.write("#SBATCH -c 12\n\n")
             file.write("module load conda\n\n")
-            file.write(f'/home/thakarr/D-MO-Operator/build/MOD "{project_home + env}.yaml" "{project_home}data/" "{alg}"\n')
+            file.write("source activate base\n\n")
+            file.write("conda activate /nfs/stak/users/thakarr/hpc-share/AAMAS24\n\n")
+            file.write(f'/nfs/stak/users/thakarr/hpc-share/AAMAS24/D-MO-Operator/build/MOD "{project_home + env}.yaml" "{project_home}data/" "{alg}"\n')
 
         # Make the file executable
         os.chmod(script_path, 0o755)
@@ -34,7 +39,7 @@ def generate_bash_scripts(time, env, alg, num_scripts, output_dir):
 # Example usage:
 time = "0-12:00:00"  # Set the time
 envs = ["MOBP-2objs-easy", "MOBP-2objs-hard", "MOREP-2objs-easy", "MOREP-2objs-hard"]
-algs = ["mod", "mod_abl", "mod_teama_abl", "nsga"]
+algs = ["mod", "mod_abl", "mod_team_abl", "nsga"]
 num_scripts = 10  # Number of bash scripts to generate
 output_dir = "experiment-scripts/bash_scripts"  # Directory to save the scripts
 
