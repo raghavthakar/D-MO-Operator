@@ -19,8 +19,6 @@ MOREPDomain:
 
   team:
     numberOfAgents: 10
-# --------------------------------------
-
 
   POIs:
     - id: 0

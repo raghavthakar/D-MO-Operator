@@ -11,8 +11,8 @@ class Individual;
 class EvolutionaryUtils;
 
 class Individual {
-    Team team;
 public:
+    Team team;
     int id;
     std::vector<double> fitness;
     std::vector<double> differenceEvaluations;

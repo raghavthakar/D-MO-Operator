@@ -7,6 +7,7 @@
 #include "NSGA_II.h"
 #include "MOD_ablated.h"
 #include "MOD_team_ablated.h"
+#include "DNSGA.h"
 
 // Function to get current date and time as a string
 std::string getCurrentDateTimeString() {
@@ -42,6 +43,9 @@ int main(int argc, char* argv[]) {
         } else if (alg == "mod_team_abl") {
             MODTeamAblated team_abl(config_filename);
             team_abl.evolve(config_filename, data_filename_prefix + alg + currentDateTimeString + ".csv");
+        } else if (alg == "dnsga") {
+            DNSGA dnsga(2);
+            dnsga.evolve(config_filename, data_filename_prefix + alg + currentDateTimeString + ".csv");
         }
     } else {
         // Extract filename from command-line arguments

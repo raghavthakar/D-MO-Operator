@@ -36,6 +36,7 @@ set(SOURCES
     src/MOD_team_ablated.cpp
     src/NSGA_II.cpp
     src/main.cpp
+    src/DNSGA.cpp
 )
 
 # Add executable

@@ -16,6 +16,8 @@ public:
     MOBPBaseAgent beachPerson;
     std::string whichDomain;
 
+    std::vector<double> differenceEvaluation;
+
     // Constructor
     Agent(const std::string& config_filename); // only for rover
     Agent(const Agent& other);
