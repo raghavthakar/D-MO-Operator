@@ -103,8 +103,13 @@ void DNSGA::evolve(const std::string& filename, const std::string& data_filename
             std::vector<pagmo::vector_double> input_f; // To store evaluations
 
             // Collect evaluations from policies
+            // Collect evaluations from policies and negate the fitness values
             for (const auto& policy : population) {
-                input_f.push_back(policy.differenceEvaluation); // Assuming differenceEvaluation is vector_double
+                pagmo::vector_double negated_fitness;
+                for (double val : policy.differenceEvaluation) {
+                    negated_fitness.push_back(-val); // Negate the fitness value
+                }
+                input_f.push_back(negated_fitness);
             }
 
             // Apply multi-objective sorting
@@ -130,11 +135,12 @@ void DNSGA::evolve(const std::string& filename, const std::string& data_filename
                 size_t idx2 = dist(rng);
 
                 // Determine the winner based on rank (position in sorted_indices)
+                // Determine the winner based on rank (position in sorted_indices)
                 size_t winner_idx;
-                if (positions[idx1] > positions[idx2]) {
-                    winner_idx = idx1;
-                } else if (positions[idx1] < positions[idx2]) {
-                    winner_idx = idx2;
+                if (positions[idx1] < positions[idx2]) {
+                    winner_idx = idx1; // idx1 has a better rank (higher original fitness)
+                } else if (positions[idx1] > positions[idx2]) {
+                    winner_idx = idx2; // idx2 has a better rank
                 } else {
                     // Equal rank, select randomly
                     winner_idx = (rng() % 2 == 0) ? idx1 : idx2;
